@@ -110,17 +110,18 @@ void cleanupOpenCL()
 	clReleaseContext(gCLContext);
 }
 
-//int main()
-//{
-//	srand(time(0));
-//
-//	//initCL();
-//
-//	test_fc();
-//
-//	_getch();
-//
-//	cleanupOpenCL();
-//
-//	return 0;
-//}
+int main()
+{
+	srand(time(0));
+	
+	//initCL();
+
+	//test_fc();
+	test_im2col();
+
+	_getch();
+
+	cleanupOpenCL();
+
+	return 0;
+}
