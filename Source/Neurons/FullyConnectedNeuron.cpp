@@ -20,7 +20,7 @@ FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initialize
 	// 	Biases->Data(i) = rand_init(init_start, init_end);
 	// 	for (int j = 0; j < Weights->Data.rows(); j++)
 	// 	{
-	// 		Weights->Data(j, i) = rand_init(init_start, init_end);
+			// Weights->Data(j, i) = rand_init(init_start, init_end);
 	// 	}
 	// }
 	// Biases->copyToGPU();
@@ -98,7 +98,7 @@ void FullyConnectedNeuron::backprop()
 {
 #ifdef USE_GPU
 	//Weights
-	gemm_gpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, clblasNoTrans, clblasTrans, 1, 0);
+	gemm_gpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, clblasNoTrans, clblasTrans, 1, 1);
 	gemm_gpu(&mInput->Data, &mOutput->Delta, &Weights->Delta, clblasTrans, clblasNoTrans, 1, 0);
 
 	//Biases

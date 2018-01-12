@@ -18,6 +18,7 @@ void StandardOptimizer::optimize()
 	{
 		for (uint64_t j = 0; j < Variables[i]->Data.mSize; j++)
 		{
+			// printf("%f\n", Variables[i]->Delta(j));
 			Variables[i]->Data(j) -= LearningRate*Variables[i]->Delta(j);
 		}
 	}

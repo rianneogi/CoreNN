@@ -15,5 +15,5 @@ RangeInitializer::~RangeInitializer()
 
 Float RangeInitializer::get_value(uint64_t n)
 {
-	return ((rand() % Quanta) / Quanta)*(End - Start) + Start;
+	return ((rand() % Quanta) / (Quanta*1.0))*(End - Start) + Start;
 }

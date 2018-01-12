@@ -32,7 +32,6 @@ void Board::addNeuron(Neuron* n, std::string name)
 	// assert(mOptimizer != nullptr);
 	mNeuronNames[name] = mNeurons.size();
 	mNeurons.push_back(n);
-	// printf("hereh\n");
 	// auto variables = n->getVariables();
 	// for (size_t i = 0; i < variables.size(); i++)
 	// {
@@ -85,7 +84,7 @@ bool Board::setUp()
 	bool res = true;
 	for(size_t i = 0;i<mNeurons.size();i++)
 	{
-		if(mNeurons[i]->init()==false)
+		if(mNeurons[i]->init() == false)
 		{
 			printf("ERROR: Error in set up of Neuron %d", i);
 			res = false;
@@ -96,9 +95,9 @@ bool Board::setUp()
 	for(size_t i = 0;i<mNeurons.size();i++)
 	{
 		auto variables = mNeurons[i]->getVariables();
-		for (size_t i = 0; i < variables.size(); i++)
+		for (size_t j = 0; j < variables.size(); j++)
 		{
-			mOptimizer->addVariable(variables[i]);
+			mOptimizer->addVariable(variables[j]);
 		}
 	}
 	return res;
@@ -242,24 +241,28 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	assert(placeholders.size() == mPlaceholders.size());
 	for (size_t i = 0; i < mPlaceholders.size(); i++)
 	{
+		assert(mPlaceholders[i]->mShape==placeholders[i].mShape);
 		mPlaceholders[i]->mData = placeholders[i].mData;
 	}
 
 	//Forward Pass
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
-		// printf("forward %d\n", i);
+		printf("forward %d\n", i);
 		mNeurons[i]->forward();
 	}
 
 	//Calculate Error
 	Float error = mErrorFuncs[0]->calculateError();
 
+	// printf("%f del\n", mOptimizer->Variables[0]->Delta(0));
+
 	//Backward Pass
 	for (int i = mNeurons.size() - 1; i >= 0; i--)
 	{
 		// printf("backprop %d\n", i);
 		mNeurons[i]->backprop();
+		// printf("%f %d del\n", mOptimizer->Variables[i]->Delta(0), i);
 	}
 
 	return error;
@@ -341,7 +344,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 			if (mUseOptimizer)
 				mOptimizer->optimize();
 
-			printf("%d/%d\n", j, inputs.rows() / batch_size);
+			// printf("%d/%d\n", j, inputs.rows() / batch_size);
 
 			// placeholders.clear();
 		}
@@ -351,8 +354,8 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 	}
 	printf("Done training\n");
 
-	tmp_input.freemem();
-	tmp_output.freemem();
+	// tmp_input.freemem();
+	// tmp_output.freemem();
 
 	return error;
 }

@@ -4,3 +4,7 @@
 [Ll]ib
 [Dd]ata
 cquery_log.txt
+toolbar.cson
+toolbar.json
+toolbar.coffee
+toolbar.js
