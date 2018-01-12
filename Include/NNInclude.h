@@ -25,3 +25,5 @@
 #include "ErrorFunctions/L1Error.h"
 #include "ErrorFunctions/MeanSquaredError.h"
 #include "ErrorFunctions/UnitError.h"
+
+#include "Initializers/RangeInitializer.h"

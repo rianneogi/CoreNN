@@ -24,7 +24,7 @@ public:
 	FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer);
 	~FullyConnectedNeuron();
 
-	bool setup();
+	bool init();
 
 	void forward();
 	void backprop();

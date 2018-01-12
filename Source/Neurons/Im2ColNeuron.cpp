@@ -13,7 +13,7 @@ Im2ColNeuron::~Im2ColNeuron()
 {
 }
 
-bool Im2ColNeuron::setup()
+bool Im2ColNeuron::init()
 {
 	BatchSize = mInput->Data.mShape[0];
 

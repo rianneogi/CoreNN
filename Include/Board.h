@@ -32,6 +32,9 @@ public:
 	void setOptimizer(Optimizer* optimizer);
 	void addPlaceholder(Tensor* placeholder);
 
+	bool setUp();
+	void reset();
+
 	//Tensor forward(const Tensor& input);
 	Tensor forward(const std::vector<Tensor>& placeholders);
 	Tensor forward(const Tensor& input1);

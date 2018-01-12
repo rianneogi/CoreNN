@@ -2,7 +2,7 @@
 
 Neuron::Neuron()
 {
-	printf("WARNING: default constructor for neuron called\n");
+	// printf("WARNING: default constructor for neuron called\n");
 }
 
 Neuron::~Neuron()
@@ -14,7 +14,12 @@ std::vector<Blob*> Neuron::getVariables()
     return std::vector<Blob*>();
 }
 
-void reset()
+bool Neuron::init()
 {
-    
+	return true;
+}
+
+void Neuron::reset()
+{
+
 }

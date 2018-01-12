@@ -13,7 +13,7 @@ public:
 	LeakyReLUNeuron(Blob* input, Blob* output, Float leak_factor = 0);
 	~LeakyReLUNeuron();
 
-	bool setup();
+	bool init();
 
 	void forward();
 	void backprop();

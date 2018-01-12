@@ -32,7 +32,7 @@ public:
 	Im2ColNeuron(Blob* input, Blob* output, uint64_t field_width, uint64_t field_height);
 	~Im2ColNeuron();
 
-	bool setup();
+	bool init();
 
 	void forward();
 	void backprop();

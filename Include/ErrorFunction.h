@@ -11,9 +11,8 @@ public:
 	ErrorFunction();
 	ErrorFunction(Blob* output);
 	ErrorFunction(Blob* output, Tensor target);
-	~ErrorFunction();
+	virtual ~ErrorFunction();
 
 	virtual Float calculateError() = 0;
 	virtual void backprop() = 0;
 };
-

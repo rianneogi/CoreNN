@@ -6,7 +6,7 @@ class Initializer
 {
 public:
 	Initializer();
-	~Initializer();
+	virtual ~Initializer();
 
 	virtual Float get_value(uint64_t n) = 0;
 };

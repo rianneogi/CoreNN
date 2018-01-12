@@ -15,7 +15,7 @@ LeakyReLUNeuron::~LeakyReLUNeuron()
 {
 }
 
-bool LeakyReLUNeuron::setup()
+bool LeakyReLUNeuron::init()
 {
 	assert(mInput->Data.mSize == mOutput->Data.mSize);
 

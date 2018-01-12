@@ -29,28 +29,29 @@ void Board::addNeuron(Neuron* n)
 
 void Board::addNeuron(Neuron* n, std::string name)
 {
-	assert(mOptimizer != nullptr);
+	// assert(mOptimizer != nullptr);
 	mNeuronNames[name] = mNeurons.size();
 	mNeurons.push_back(n);
-	auto variables = n->getVariables();
-	for (size_t i = 0; i < variables.size(); i++)
-	{
-		mOptimizer->addVariable(variables[i]);
-	}
+	// printf("hereh\n");
+	// auto variables = n->getVariables();
+	// for (size_t i = 0; i < variables.size(); i++)
+	// {
+	// 	mOptimizer->addVariable(variables[i]);
+	// }
 }
 
-void Board::addNeuronWithFixedVariables(Neuron* n)
-{
-	addNeuronWithFixedVariables(n, std::to_string(mNeurons.size()));
-}
+// void Board::addNeuronWithFixedVariables(Neuron* n)
+// {
+// 	addNeuronWithFixedVariables(n, std::to_string(mNeurons.size()));
+// }
+//
+// void Board::addNeuronWithFixedVariables(Neuron* n, std::string name)
+// {
+// 	mNeuronNames[name] = mNeurons.size();
+// 	mNeurons.push_back(n);
+// }
 
-void Board::addNeuronWithFixedVariables(Neuron* n, std::string name)
-{
-	mNeuronNames[name] = mNeurons.size();
-	mNeurons.push_back(n);
-}
-
-Blob * Board::newBlob(const TensorShape& shape)
+Blob* Board::newBlob(const TensorShape& shape)
 {
 	return newBlob(shape, std::to_string(mBlobs.size()));
 }
@@ -76,6 +77,39 @@ void Board::setOptimizer(Optimizer* optimizer)
 void Board::addPlaceholder(Tensor* placeholder)
 {
 	mPlaceholders.push_back(placeholder);
+}
+
+bool Board::setUp()
+{
+	assert(mOptimizer!=nullptr);
+	bool res = true;
+	for(size_t i = 0;i<mNeurons.size();i++)
+	{
+		if(mNeurons[i]->init()==false)
+		{
+			printf("ERROR: Error in set up of Neuron %d", i);
+			res = false;
+		}
+	}
+	reset();
+
+	for(size_t i = 0;i<mNeurons.size();i++)
+	{
+		auto variables = mNeurons[i]->getVariables();
+		for (size_t i = 0; i < variables.size(); i++)
+		{
+			mOptimizer->addVariable(variables[i]);
+		}
+	}
+	return res;
+}
+
+void Board::reset()
+{
+	for(size_t i = 0;i<mNeurons.size();i++)
+	{
+		mNeurons[i]->reset();
+	}
 }
 
 //Tensor Board::forward(const Tensor& input)
@@ -214,6 +248,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	//Forward Pass
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
+		// printf("forward %d\n", i);
 		mNeurons[i]->forward();
 	}
 
@@ -223,6 +258,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	//Backward Pass
 	for (int i = mNeurons.size() - 1; i >= 0; i--)
 	{
+		// printf("backprop %d\n", i);
 		mNeurons[i]->backprop();
 	}
 
@@ -287,6 +323,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 	clock.Start();
 	Tensor tmp_input;
 	Tensor tmp_output;
+
 	for (int i = 0; i < epochs; i++)
 	{
 		error = 0.0;
@@ -294,6 +331,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 		{
 			tmp_input = inputs.cut(batch_size*j, batch_size);
 			tmp_output = outputs.cut(batch_size*j, batch_size);
+
 			std::vector<Tensor> placeholders;
 			placeholders.push_back(tmp_input);
 			placeholders.push_back(tmp_output);
@@ -302,6 +340,10 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 
 			if (mUseOptimizer)
 				mOptimizer->optimize();
+
+			printf("%d/%d\n", j, inputs.rows() / batch_size);
+
+			// placeholders.clear();
 		}
 		clock.Stop();
 		printf("Error %d: %f, epochs per sec: %f\n", i+1, error, ((i + 1)*1.0) / clock.ElapsedSeconds());

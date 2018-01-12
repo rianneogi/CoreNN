@@ -116,8 +116,8 @@ int main()
 
 	//initCL();
 
-	//test_fc();
-	test_im2col();
+	test_fc();
+	//test_im2col();
 
 	//_getch();
 

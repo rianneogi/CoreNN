@@ -6,12 +6,12 @@ class Neuron
 {
 public:
 	Neuron();
-	~Neuron();
+	virtual ~Neuron();
 
 	virtual void forward() = 0;
 	virtual void backprop() = 0;
 
 	virtual std::vector<Blob*> getVariables();
 	virtual void reset();
-	virtual bool setUp() = 0;
+	virtual bool init();
 };

@@ -9,7 +9,7 @@ FullyConnectedNeuron::FullyConnectedNeuron() : Neuron()
 // }
 
 FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer)
-	: mInput(input), mOutput(output)
+	: mInput(input), mOutput(output), mInitializer(initializer)
 {
 	// assert(input->Data.mShape.size() == 2);
 	// assert(output->Data.mShape.size() == 2);
@@ -48,7 +48,7 @@ FullyConnectedNeuron::~FullyConnectedNeuron()
 	Ones.freemem();
 }
 
-bool FullyConnectedNeuron::setup()
+bool FullyConnectedNeuron::init()
 {
 	assert(mInput->Data.mShape.size() == 2);
 	assert(mOutput->Data.mShape.size() == 2);
