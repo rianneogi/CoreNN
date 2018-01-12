@@ -10,5 +10,8 @@ public:
 
 	virtual void forward() = 0;
 	virtual void backprop() = 0;
-	virtual std::vector<Blob*> getVariables() = 0;
+
+	virtual std::vector<Blob*> getVariables();
+	virtual void reset();
+	virtual bool setUp() = 0;
 };

@@ -8,6 +8,8 @@ public:
 	Blob* mInput;
 	Blob* mOutput;
 
+	Initializer* mInitializer;
+
 	uint64_t InputSize;
 	uint64_t OutputSize;
 	uint64_t BatchSize;
@@ -17,13 +19,14 @@ public:
 	Tensor BiasesDelta;*/
 	Tensor Ones;
 
-	FullyConnectedNeuron(); 
-	FullyConnectedNeuron(Blob* input, Blob* output);
-	FullyConnectedNeuron(Blob* input, Blob* output, Float init_start, Float init_end);
+	FullyConnectedNeuron();
+	// FullyConnectedNeuron(Blob* input, Blob* output);
+	FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer);
 	~FullyConnectedNeuron();
+
+	bool setup();
 
 	void forward();
 	void backprop();
 	std::vector<Blob*> getVariables();
 };
-

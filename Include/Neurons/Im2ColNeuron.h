@@ -32,6 +32,8 @@ public:
 	Im2ColNeuron(Blob* input, Blob* output, uint64_t field_width, uint64_t field_height);
 	~Im2ColNeuron();
 
+	bool setup();
+
 	void forward();
 	void backprop();
 	std::vector<Blob*> getVariables();

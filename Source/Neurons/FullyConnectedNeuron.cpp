@@ -4,37 +4,37 @@ FullyConnectedNeuron::FullyConnectedNeuron() : Neuron()
 {
 }
 
-FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output) : FullyConnectedNeuron(input, output, -0.5, 0.5)
-{
-}
+// FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output) : FullyConnectedNeuron(input, output, -0.5, 0.5)
+// {
+// }
 
-FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Float init_start, Float init_end)
+FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer)
 	: mInput(input), mOutput(output)
 {
-	assert(input->Data.mShape.size() == 2);
-	assert(output->Data.mShape.size() == 2);
-	Weights = new Blob(make_shape(input->Data.cols(), output->Data.cols()));
-	Biases = new Blob(make_shape(1, output->Data.cols()));
-	for (int i = 0; i < Weights->Data.cols(); i++)
-	{
-		Biases->Data(i) = rand_init(init_start, init_end);
-		for (int j = 0; j < Weights->Data.rows(); j++)
-		{
-			Weights->Data(j, i) = rand_init(init_start, init_end);
-		}
-	}
-	Biases->copyToGPU();
-	Weights->copyToGPU();
-	InputSize = Weights->Data.rows();
-	OutputSize = Weights->Data.cols();
-	BatchSize = output->Data.rows();
-	assert(input->Data.rows() == output->Data.rows());
-
-	//WeightsDelta = Tensor(make_shape(Weights->Data.rows(), Weights->Data.cols()));
-	//BiasesDelta = Tensor(make_shape(1, Biases->Data.mSize));
-	Ones = Tensor(make_shape(1, BatchSize));
-	Ones.setconstant(1);
-	Ones.copyToGPU();
+	// assert(input->Data.mShape.size() == 2);
+	// assert(output->Data.mShape.size() == 2);
+	// Weights = new Blob(make_shape(input->Data.cols(), output->Data.cols()));
+	// Biases = new Blob(make_shape(1, output->Data.cols()));
+	// for (int i = 0; i < Weights->Data.cols(); i++)
+	// {
+	// 	Biases->Data(i) = rand_init(init_start, init_end);
+	// 	for (int j = 0; j < Weights->Data.rows(); j++)
+	// 	{
+	// 		Weights->Data(j, i) = rand_init(init_start, init_end);
+	// 	}
+	// }
+	// Biases->copyToGPU();
+	// Weights->copyToGPU();
+	// InputSize = Weights->Data.rows();
+	// OutputSize = Weights->Data.cols();
+	// BatchSize = output->Data.rows();
+	// assert(input->Data.rows() == output->Data.rows());
+    //
+	// //WeightsDelta = Tensor(make_shape(Weights->Data.rows(), Weights->Data.cols()));
+	// //BiasesDelta = Tensor(make_shape(1, Biases->Data.mSize));
+	// Ones = Tensor(make_shape(1, BatchSize));
+	// Ones.setconstant(1);
+	// Ones.copyToGPU();
 }
 
 FullyConnectedNeuron::~FullyConnectedNeuron()
@@ -46,6 +46,36 @@ FullyConnectedNeuron::~FullyConnectedNeuron()
 	delete Weights;
 	delete Biases;
 	Ones.freemem();
+}
+
+bool FullyConnectedNeuron::setup()
+{
+	assert(mInput->Data.mShape.size() == 2);
+	assert(mOutput->Data.mShape.size() == 2);
+	Weights = new Blob(make_shape(mInput->Data.cols(), mOutput->Data.cols()));
+	Biases = new Blob(make_shape(1, mOutput->Data.cols()));
+	for (int i = 0; i < Weights->Data.cols(); i++)
+	{
+		Biases->Data(i) = mInitializer->get_value(i);
+		for (int j = 0; j < Weights->Data.rows(); j++)
+		{
+			Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.rows());
+		}
+	}
+	Biases->copyToGPU();
+	Weights->copyToGPU();
+	InputSize = Weights->Data.rows();
+	OutputSize = Weights->Data.cols();
+	BatchSize = mOutput->Data.rows();
+	assert(mInput->Data.rows() == mOutput->Data.rows());
+
+	//WeightsDelta = Tensor(make_shape(Weights->Data.rows(), Weights->Data.cols()));
+	//BiasesDelta = Tensor(make_shape(1, Biases->Data.mSize));
+	Ones = Tensor(make_shape(1, BatchSize));
+	Ones.setconstant(1);
+	Ones.copyToGPU();
+
+	return true;
 }
 
 void FullyConnectedNeuron::forward()

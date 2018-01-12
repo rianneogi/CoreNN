@@ -9,11 +9,17 @@ LeakyReLUNeuron::LeakyReLUNeuron()
 LeakyReLUNeuron::LeakyReLUNeuron(Blob* input, Blob* output, Float leak_factor)
 	: mInput(input), mOutput(output), LeakFactor(leak_factor)
 {
-	assert(input->Data.mSize == output->Data.mSize);
 }
 
 LeakyReLUNeuron::~LeakyReLUNeuron()
 {
+}
+
+bool LeakyReLUNeuron::setup()
+{
+	assert(mInput->Data.mSize == mOutput->Data.mSize);
+
+	return true;
 }
 
 void LeakyReLUNeuron::forward()
