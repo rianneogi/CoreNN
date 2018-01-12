@@ -113,15 +113,15 @@ void cleanupOpenCL()
 int main()
 {
 	srand(time(0));
-	
+
 	//initCL();
 
 	//test_fc();
 	test_im2col();
 
-	_getch();
+	//_getch();
 
-	cleanupOpenCL();
+	//cleanupOpenCL();
 
 	return 0;
 }

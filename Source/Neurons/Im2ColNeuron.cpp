@@ -34,12 +34,12 @@ void Im2ColNeuron::forward()
 	for (uint64_t batch = 0;batch<BatchSize;batch++)
 	{
 		uint64_t sub_batch = 0;
-		for(uint64_t y = 0;y < InputHeight - FieldHeight;y++)
+		for(uint64_t y = 0;y <= InputHeight - FieldHeight;y++)
 		{
-			for (uint64_t x = 0;x < InputWidth-FieldWidth;x++)
+			for (uint64_t x = 0;x <= InputWidth - FieldWidth;x++)
 			{
 				uint64_t id = 0;
-				for(uint64_t i = y;i <= y+FieldHeight;i++)
+				for(uint64_t i = y;i < y+FieldHeight;i++)
 				{
 					memcpy(&mOutput->Data(batch*FieldCount + sub_batch, id),
 						&mInput->Data(batch, i, x, 0), FieldWidth * InputDepth * sizeof(Float));

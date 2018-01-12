@@ -39,3 +39,8 @@ add_library(CoreNN STATIC ${SOURCE_FILES})
 target_link_libraries(CoreNN OpenCL.lib)
 target_link_libraries(CoreNN libopenblas.dll.lib)
 target_link_libraries(CoreNN clBLAS.lib)
+
+add_executable(CoreNN_test ${SOURCE_FILES})
+target_link_libraries(CoreNN_test OpenCL.lib)
+target_link_libraries(CoreNN_test libopenblas.dll.lib)
+target_link_libraries(CoreNN_test clBLAS.lib)

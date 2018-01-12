@@ -537,11 +537,12 @@ void test_im2col()
 	int batch_size = 10;
 	double learning_rate = 0.0005;
 
-	Blob* inputBlob = b.newBlob(make_shape(batch_size, 1, 10, 10));
+	Blob* inputBlob = b.newBlob(make_shape(batch_size, 10, 10, 1));
 	Blob* l1convBlob = b.newBlob(make_shape(batch_size * 8 * 8, 9));
 	//Blob* l1fcBlob = b.newBlob(make_shape(batch_size * 8 * 8, 10));
-	b.addNeuron(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));
+	b.addNeuronWithFixedVariables(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));
 	//b.addNeuron(new ConvNeuron(l1convBlob, l1fcBlob, learning_rate));
+	b.addPlaceholder(&inputBlob->Data);
 
 	Tensor input(make_shape(batch_size, 1, 10, 10));
 
