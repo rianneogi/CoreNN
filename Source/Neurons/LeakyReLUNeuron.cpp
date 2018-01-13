@@ -28,7 +28,7 @@ void LeakyReLUNeuron::forward()
 	{
 		mOutput->Data(i) = std::max(LeakFactor*mInput->Data(i), mInput->Data(i));
 	}
-	printf("%f %f %f\n", mOutput->Data(0), mInput->Data(0), LeakFactor*mInput->Data(0));
+	// printf("%f %f %f\n", mOutput->Data(0), mInput->Data(0), LeakFactor*mInput->Data(0));
 }
 
 void LeakyReLUNeuron::backprop()

@@ -87,6 +87,7 @@ bool Board::setUp()
 		if(mNeurons[i]->init() == false)
 		{
 			printf("ERROR: Error in set up of Neuron %d", i);
+			_getch();
 			res = false;
 		}
 	}
@@ -257,7 +258,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 
 	// printf("%f del\n", mOptimizer->Variables[0]->Delta(0));
 
-	//Backward Pass
+	// Backward Pass
 	for (int i = mNeurons.size() - 1; i >= 0; i--)
 	{
 		// printf("backprop %d\n", i);
@@ -415,8 +416,10 @@ void Board::load_variables(std::string filename)
 
 void Board::copy_variables(const Board* b)
 {
+	assert(mOptimizer->Variables.size()==b->mOptimizer->Variables.size());
 	for (size_t i = 0; i < mOptimizer->Variables.size(); i++)
 	{
+		assert(mOptimizer->Variables[i]->Data.mSize==b->mOptimizer->Variables[i]->Data.mSize);
 		memcpy(mOptimizer->Variables[i]->Data.mData, b->mOptimizer->Variables[i]->Data.mData,
 			sizeof(Float)*mOptimizer->Variables[i]->Data.mSize);
 	}

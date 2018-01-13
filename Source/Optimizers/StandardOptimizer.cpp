@@ -21,6 +21,6 @@ void StandardOptimizer::optimize()
 		{
 			Variables[i]->Data(j) -= LearningRate*Variables[i]->Delta(j);
 		}
-		printf("opt %d %f %f %f %f\n", i, Variables[i]->Delta(0), Variables[i]->Data(0), prev, LearningRate);
+		// printf("opt %d %f %f %f %f\n", i, Variables[i]->Delta(0), Variables[i]->Data(0), prev, LearningRate);
 	}
 }

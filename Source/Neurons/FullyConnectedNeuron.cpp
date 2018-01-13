@@ -110,10 +110,10 @@ void FullyConnectedNeuron::backprop()
 	//Weights
 	gemm_cpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CblasNoTrans, CblasTrans, 1, 1);
 	gemm_cpu(&mInput->Data, &mOutput->Delta, &Weights->Delta, CblasTrans, CblasNoTrans, 1, 0);
-	printf("fc %f %f %f\n", mInput->Data(0), mOutput->Delta(0), Weights->Delta(0));
+	// printf("fc %f %f %f\n", mInput->Data(0), mOutput->Delta(0), Weights->Delta(0));
 	//Biases
 	gemm_cpu(&Ones, &mOutput->Delta, &Biases->Delta, CblasNoTrans, CblasNoTrans, 1, 0);
-	printf("fc bias %f %f\n", mOutput->Delta(0), Biases->Delta(0));
+	// printf("fc bias %f %f\n", mOutput->Delta(0), Biases->Delta(0));
 #endif
 }
 

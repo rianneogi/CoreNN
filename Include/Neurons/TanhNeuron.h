@@ -22,8 +22,9 @@ public:
 	TanhNeuron(Blob* input, Blob* output);
 	~TanhNeuron();
 
+	bool init();
+
 	void forward();
 	void backprop();
 	std::vector<Blob*> getVariables();
 };
-

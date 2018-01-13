@@ -254,7 +254,7 @@ void test_fc()
 
 	Board b;
 	int batch_size = 100;
-	double learning_rate = 0.05;
+	double learning_rate = 0.0005;
 	int epochs = 5;
 
 	Initializer* initializer = new RangeInitializer();
@@ -270,7 +270,6 @@ void test_fc()
 	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10));
 
 	b.setOptimizer(new StandardOptimizer(learning_rate));
-	b.addErrorFunction(new MeanSquaredError(outputSigBlob));
 
 	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer));
 
@@ -281,12 +280,14 @@ void test_fc()
 	/*b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, layer3FCBlob, learning_rate));
 	b.addNeuron(new LeakyReLUNeuron(layer3FCBlob, layer3SigBlob, 0.05));*/
 	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob, initializer));
-	b.addNeuron(new LeakyReLUNeuron(outputFCBlob, outputSigBlob, 0.05));
+	b.addNeuron(new TanhNeuron(outputFCBlob, outputSigBlob));
 
-	b.setUp();
+	b.addErrorFunction(new MeanSquaredError(outputSigBlob));
 
 	b.addPlaceholder(&inputBlob->Data);
 	b.addPlaceholder(&b.mErrorFuncs[0]->mTarget);
+
+	b.setUp();
 
 	Tensor inputs_train = openidx_input("../../Data/train-images.idx3-ubyte");
 	Tensor outputs_train = openidx_output("../../Data/train-labels.idx1-ubyte", 10);
@@ -301,7 +302,6 @@ void test_fc()
 
 	Matrix inputs_test = b6.inputs;
 	Matrix outputs_test = b6.outputs;*/
-	printf("optimizer: %d\n", b.mOptimizer->Variables.size());
 
 	b.train(inputs_train, outputs_train, epochs, batch_size);
 	/*for (int i = 0; i < 10; i++)
@@ -315,7 +315,6 @@ void test_fc()
 	int acc = 0;
 	for (size_t i = 0; i < inputs_test.rows()/batch_size; i++)
 	{
-		printf("%d\n", i);
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
 		for (int j = 0; j < batch_size; j++)
 		{
@@ -339,7 +338,7 @@ void test_fc()
 	outputs_test.freeCPU();
 
 	//nn.save("net_handwriting.txt");
-	_getch();
+	// _getch();
 }
 
 void test_conv()

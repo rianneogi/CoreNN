@@ -6,11 +6,17 @@ TanhNeuron::TanhNeuron() : Neuron()
 
 TanhNeuron::TanhNeuron(Blob* input, Blob* output) : mInput(input), mOutput(output)
 {
-	assert(input->Data.mSize == output->Data.mSize);
 }
 
 TanhNeuron::~TanhNeuron()
 {
+}
+
+bool TanhNeuron::init()
+{
+	assert(mInput->Data.mSize == mOutput->Data.mSize);
+
+	return true;
 }
 
 void TanhNeuron::forward()
