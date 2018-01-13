@@ -254,7 +254,7 @@ void test_fc()
 
 	Board b;
 	int batch_size = 100;
-	double learning_rate = 0.5;
+	double learning_rate = 0.05;
 	int epochs = 5;
 
 	Initializer* initializer = new RangeInitializer();

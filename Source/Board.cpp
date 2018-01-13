@@ -248,8 +248,8 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	//Forward Pass
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
-		printf("forward %d\n", i);
 		mNeurons[i]->forward();
+		// printf("forward %d %f %f\n", i, mBlobs[i]->Data(0), mBlobs[i+1]->Data(0));
 	}
 
 	//Calculate Error
@@ -338,6 +338,16 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 			std::vector<Tensor> placeholders;
 			placeholders.push_back(tmp_input);
 			placeholders.push_back(tmp_output);
+
+			// tmp_input.print();
+			// printf("data %f\n", tmp_input(tmp_input.mSize/2));
+			// for(uint64_t i = 0;i<tmp_input.mSize;i++)
+			// {
+			// 	if(tmp_input(i)>2)
+			// 	{
+			// 		printf("%f\n", i);
+			// 	}
+			// }
 
 			error += backprop(placeholders);
 

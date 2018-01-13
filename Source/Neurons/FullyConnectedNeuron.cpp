@@ -50,16 +50,19 @@ FullyConnectedNeuron::~FullyConnectedNeuron()
 
 bool FullyConnectedNeuron::init()
 {
+	assert(mInitializer!=nullptr);
 	assert(mInput->Data.mShape.size() == 2);
 	assert(mOutput->Data.mShape.size() == 2);
 	Weights = new Blob(make_shape(mInput->Data.cols(), mOutput->Data.cols()));
 	Biases = new Blob(make_shape(1, mOutput->Data.cols()));
-	for (int i = 0; i < Weights->Data.cols(); i++)
+	for (uint64_t i = 0; i < Weights->Data.cols(); i++)
 	{
 		Biases->Data(i) = mInitializer->get_value(i);
-		for (int j = 0; j < Weights->Data.rows(); j++)
+		// printf("b %d %f\n", i, Biases->Data(i));
+		for (uint64_t j = 0; j < Weights->Data.rows(); j++)
 		{
 			Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.rows());
+			// printf("wt %d %d %f\n", j, i, Weights->Data(j,i));
 		}
 	}
 	Biases->copyToGPU();
@@ -107,9 +110,10 @@ void FullyConnectedNeuron::backprop()
 	//Weights
 	gemm_cpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CblasNoTrans, CblasTrans, 1, 1);
 	gemm_cpu(&mInput->Data, &mOutput->Delta, &Weights->Delta, CblasTrans, CblasNoTrans, 1, 0);
-
+	printf("fc %f %f %f\n", mInput->Data(0), mOutput->Delta(0), Weights->Delta(0));
 	//Biases
 	gemm_cpu(&Ones, &mOutput->Delta, &Biases->Delta, CblasNoTrans, CblasNoTrans, 1, 0);
+	printf("fc bias %f %f\n", mOutput->Delta(0), Biases->Delta(0));
 #endif
 }
 
