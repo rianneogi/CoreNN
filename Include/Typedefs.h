@@ -3,11 +3,13 @@
 //#define NN_DEBUG
 //#define USE_GPU
 
+#undef NDEBUG
+#include "assert.h"
+
 #include "math.h"
 #include <vector>
 #include <iostream>
 #include "conio.h"
-#include "assert.h"
 #include "time.h"
 #include <fstream>
 

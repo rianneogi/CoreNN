@@ -242,7 +242,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	assert(placeholders.size() == mPlaceholders.size());
 	for (size_t i = 0; i < mPlaceholders.size(); i++)
 	{
-		assert(mPlaceholders[i]->mShape==placeholders[i].mShape);
+		assert(mPlaceholders[i]->mSize==placeholders[i].mSize);
 		mPlaceholders[i]->mData = placeholders[i].mData;
 	}
 

@@ -3,6 +3,8 @@
 
 #include "NNInclude.h"
 
+const std::string TEST_DATA_PATH = "../../Data/";
+
 //Vector binaryrep(int x, int size)
 //{
 //	Vector v;
@@ -269,7 +271,7 @@ void test_fc()
 	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10));
 	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10));
 
-	b.setOptimizer(new StandardOptimizer(learning_rate));
+	b.setOptimizer(new AdamOptimizer(learning_rate));
 
 	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer));
 
@@ -289,10 +291,10 @@ void test_fc()
 
 	b.setUp();
 
-	Tensor inputs_train = openidx_input("../../Data/train-images.idx3-ubyte");
-	Tensor outputs_train = openidx_output("../../Data/train-labels.idx1-ubyte", 10);
-	Tensor inputs_test = openidx_input("../../Data/t10k-images.idx3-ubyte");
-	Tensor outputs_test = openidx_output("../../Data/t10k-labels.idx1-ubyte", 10);
+	Tensor inputs_train = openidx_input(TEST_DATA_PATH + "train-images.idx3-ubyte");
+	Tensor outputs_train = openidx_output(TEST_DATA_PATH + "train-labels.idx1-ubyte", 10);
+	Tensor inputs_test = openidx_input(TEST_DATA_PATH + "t10k-images.idx3-ubyte");
+	Tensor outputs_test = openidx_output(TEST_DATA_PATH + "t10k-labels.idx1-ubyte", 10);
 
 	/*TrainingData b1 = load_cifar("Data/cifar-10-batches-bin/data_batch_1.bin");
 	TrainingData b2 = load_cifar("Data/cifar-10-batches-bin/data_batch_2.bin");
@@ -345,6 +347,7 @@ void test_conv()
 {
 	Board b;
 	int batch_size = 100;
+	int epochs = 5;
 	double learning_rate = 0.0005;
 
 	Initializer* initializer = new RangeInitializer();
@@ -362,24 +365,30 @@ void test_conv()
 	b.setOptimizer(new AdamOptimizer(0.005));
 
 	b.addNeuron(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));
-	b.addNeuron(new ConvNeuron(l1convBlob, l1fcBlob, learning_rate));
+	b.addNeuron(new FullyConnectedNeuron(l1convBlob, l1fcBlob, initializer));
 	b.addNeuron(new LeakyReLUNeuron(l1fcBlob, l1tanhBlob, 0.05));
 	//b.addNeuron(new ReshapeNeuron(l1tanhBlob, l1tanhBlob, make_shape(batch_size, 10 * 26 * 26)));
 
 	//l1tanhBlob->reshape(make_shape(batch_size, 10 * 26 * 26));
 	b.addNeuron(new FullyConnectedNeuron(l1tanhBlob, l2fcBlob, initializer));
-	b.addNeuron(new LeakyReLUNeuron(l2fcBlob, l2tanhBlob, 0.05));
-	b.addNeuron(new FullyConnectedNeuron(l2tanhBlob, l3fcBlob, initializer));
-	b.addNeuron(new TanhNeuron(l3fcBlob, l3tanhBlob));
+	b.addNeuron(new TanhNeuron(l2fcBlob, l3tanhBlob));
+	// b.addNeuron(new FullyConnectedNeuron(l2tanhBlob, l3fcBlob, initializer));
+	// b.addNeuron(new TanhNeuron(l3fcBlob, l3tanhBlob));
 	b.addErrorFunction(new MeanSquaredError(l3tanhBlob));
 	//l1tanhBlob->reshape(make_shape(batch_size * 26 * 26, 10));
 
-	Tensor inputs_train = openidx_input("Data/train-images.idx3-ubyte");
-	Tensor outputs_train = openidx_output("Data/train-labels.idx1-ubyte", 10);
-	Tensor inputs_test = openidx_input("Data/t10k-images.idx3-ubyte");
-	Tensor outputs_test = openidx_output("Data/t10k-labels.idx1-ubyte", 10);
+	b.addPlaceholder(&inputBlob->Data);
+	b.addPlaceholder(&b.mErrorFuncs[0]->mTarget);
 
-	b.train(inputs_train, outputs_train, 10, batch_size);
+	Tensor inputs_train = openidx_input(TEST_DATA_PATH + "train-images.idx3-ubyte");
+	Tensor outputs_train = openidx_output(TEST_DATA_PATH + "train-labels.idx1-ubyte", 10);
+	Tensor inputs_test = openidx_input(TEST_DATA_PATH + "t10k-images.idx3-ubyte");
+	Tensor outputs_test = openidx_output(TEST_DATA_PATH + "t10k-labels.idx1-ubyte", 10);
+
+	printf("Setting up\n");
+	b.setUp();
+
+	b.train(inputs_train, outputs_train, epochs, batch_size);
 
 	int acc = 0;
 	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
