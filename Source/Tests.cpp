@@ -282,7 +282,7 @@ void test_fc()
 	/*b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, layer3FCBlob, learning_rate));
 	b.addNeuron(new LeakyReLUNeuron(layer3FCBlob, layer3SigBlob, 0.05));*/
 	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob, initializer));
-	b.addNeuron(new TanhNeuron(outputFCBlob, outputSigBlob));
+	b.addNeuron(new LeakyReLUNeuron(outputFCBlob, outputSigBlob, 0.05));
 
 	b.addErrorFunction(new MeanSquaredError(outputSigBlob));
 

@@ -125,9 +125,10 @@ void Board::reset()
 Tensor Board::forward(const std::vector<Tensor>& placeholders)
 {
 	//Set placeholders
-	assert(placeholders.size() == mPlaceholders.size());
-	for (size_t i = 0; i < mPlaceholders.size(); i++)
+	assert(placeholders.size() <= mPlaceholders.size());
+	for (size_t i = 0; i < placeholders.size(); i++)
 	{
+		assert(placeholders[i].mSize==mPlaceholders[i]->mSize);
 		mPlaceholders[i]->mData = placeholders[i].mData;
 	}
 
@@ -239,8 +240,8 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	clear_deltas();
 
 	//Set placeholders
-	assert(placeholders.size() == mPlaceholders.size());
-	for (size_t i = 0; i < mPlaceholders.size(); i++)
+	assert(placeholders.size() <= mPlaceholders.size());
+	for (size_t i = 0; i < placeholders.size(); i++)
 	{
 		assert(mPlaceholders[i]->mSize==placeholders[i].mSize);
 		mPlaceholders[i]->mData = placeholders[i].mData;
