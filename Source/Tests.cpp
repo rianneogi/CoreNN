@@ -355,10 +355,11 @@ void test_conv()
 	Blob* inputBlob = b.newBlob(make_shape(batch_size, 28, 28, 1));
 	Blob* l1convBlob = b.newBlob(make_shape(batch_size*26*26, 9));
 	Blob* l1fcBlob = b.newBlob(make_shape(batch_size * 26 * 26, 10));
-	Blob* l1tanhBlob = b.newBlob(make_shape(batch_size, 10*26*26)); //reshape in tanh neuron
+	Blob* l1tanhBlob = b.newBlob(make_shape(batch_size, 26,26,10)); //reshape in tanh neuron
 	//Blob* l2inputBlob = b.newBlob(make_shape(batch_size, 10 * 26 * 26));
-	Blob* l2fcBlob = b.newBlob(make_shape(batch_size, 10));
-	Blob* l2tanhBlob = b.newBlob(make_shape(batch_size, 10));
+	Blob* l2convBlob = b.newBlob(make_shape(batch_size*24*24,10*9));
+	Blob* l2fcBlob = b.newBlob(make_shape(batch_size*24*24, 10));
+	Blob* l2tanhBlob = b.newBlob(make_shape(batch_size, 24*24*10));
 	Blob* l3fcBlob = b.newBlob(make_shape(batch_size, 10));
 	Blob* l3tanhBlob = b.newBlob(make_shape(batch_size, 10));
 
@@ -367,13 +368,13 @@ void test_conv()
 	b.addNeuron(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));
 	b.addNeuron(new FullyConnectedNeuron(l1convBlob, l1fcBlob, initializer));
 	b.addNeuron(new LeakyReLUNeuron(l1fcBlob, l1tanhBlob, 0.05));
-	//b.addNeuron(new ReshapeNeuron(l1tanhBlob, l1tanhBlob, make_shape(batch_size, 10 * 26 * 26)));
-
+	// b.addNeuron(new ReshapeNeuron(l1tanhBlob, make_shape(batch_size, 10 * 26 * 26)));
+	b.addNeuron(new Im2ColNeuron(l1tanhBlob, l2convBlob, 3, 3));
 	//l1tanhBlob->reshape(make_shape(batch_size, 10 * 26 * 26));
-	b.addNeuron(new FullyConnectedNeuron(l1tanhBlob, l2fcBlob, initializer));
-	b.addNeuron(new TanhNeuron(l2fcBlob, l3tanhBlob));
-	// b.addNeuron(new FullyConnectedNeuron(l2tanhBlob, l3fcBlob, initializer));
-	// b.addNeuron(new TanhNeuron(l3fcBlob, l3tanhBlob));
+	b.addNeuron(new FullyConnectedNeuron(l2convBlob, l2fcBlob, initializer));
+	b.addNeuron(new TanhNeuron(l2fcBlob, l2tanhBlob));
+	b.addNeuron(new FullyConnectedNeuron(l2tanhBlob, l3fcBlob, initializer));
+	b.addNeuron(new TanhNeuron(l3fcBlob, l3tanhBlob));
 	b.addErrorFunction(new MeanSquaredError(l3tanhBlob));
 	//l1tanhBlob->reshape(make_shape(batch_size * 26 * 26, 10));
 

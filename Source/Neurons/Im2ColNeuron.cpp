@@ -37,39 +37,18 @@ bool Im2ColNeuron::init()
 
 void Im2ColNeuron::forward()
 {
-	// for (uint64_t batch = 0;batch<BatchSize;batch++)
-	// {
-	// 	uint64_t sub_batch = 0;
-	// 	for (uint64_t y = 0;y <= InputHeight - FieldHeight;y++)
-	// 	{
-	// 		for (uint64_t x = 0;x <= InputWidth - FieldWidth;x++)
-	// 		{
-	// 			uint64_t id = 0;
-	// 			for(uint64_t i = y;i < y+FieldHeight;i++)
-	// 			{
-	// 				memcpy(&mOutput->Data(batch*FieldCount + sub_batch, id),
-	// 					&mInput->Data(batch, i, x, 0), FieldWidth * InputDepth * sizeof(Float));
-    //
-	// 				id += FieldWidth*InputDepth;
-	// 			}
-	// 			sub_batch++;
-	// 		}
-	// 	}
-	// }
-
-	//Works only for odd sized receptive fields
-	for (uint64_t batch = 0; batch < BatchSize; batch++)
+	for (uint64_t batch = 0;batch<BatchSize;batch++)
 	{
 		uint64_t sub_batch = 0;
-		for (uint64_t y = FieldHeight / 2; y < InputHeight - FieldHeight / 2; y++)
+		for (uint64_t y = 0;y <= InputHeight - FieldHeight;y++)
 		{
-			for (uint64_t x = FieldWidth / 2; x < InputWidth - FieldWidth / 2; x++)
+			for (uint64_t x = 0;x <= InputWidth - FieldWidth;x++)
 			{
 				uint64_t id = 0;
-				for (uint64_t i = y - FieldHeight / 2; i <= y + FieldHeight / 2; i++)
+				for(uint64_t i = y;i < y+FieldHeight;i++)
 				{
 					memcpy(&mOutput->Data(batch*FieldCount + sub_batch, id),
-						&mInput->Data(batch, i, x - FieldWidth / 2, 0), FieldWidth * InputDepth * sizeof(Float));
+						&mInput->Data(batch, i, x, 0), FieldWidth * InputDepth * sizeof(Float));
 
 					id += FieldWidth*InputDepth;
 				}
@@ -77,33 +56,54 @@ void Im2ColNeuron::forward()
 			}
 		}
 	}
-}
 
-void Im2ColNeuron::backprop()
-{
-	// for (uint64_t batch = 0;batch<BatchSize;batch++)
+	//Works only for odd sized receptive fields
+	// for (uint64_t batch = 0; batch < BatchSize; batch++)
 	// {
 	// 	uint64_t sub_batch = 0;
-	// 	for (uint64_t y = 0;y <= InputHeight - FieldHeight;y++)
+	// 	for (uint64_t y = FieldHeight / 2; y < InputHeight - FieldHeight / 2; y++)
 	// 	{
-	// 		for (uint64_t x = 0;x <= InputWidth - FieldWidth;x++)
+	// 		for (uint64_t x = FieldWidth / 2; x < InputWidth - FieldWidth / 2; x++)
 	// 		{
 	// 			uint64_t id = 0;
-	// 			for(uint64_t i = y;i < y+FieldHeight;i++)
+	// 			for (uint64_t i = y - FieldHeight / 2; i <= y + FieldHeight / 2; i++)
 	// 			{
-	// 				for(uint64_t j = x;j<x+FieldWidth;j++)
-	// 				{
-	// 					for(uint64_t k = 0;k<InputDepth;k++)
-	// 					{
-	// 						mInput->Delta(batch, i, j, k) += mOutput->Delta(batch*FieldCount + sub_batch, id);
-	// 						id++;
-	// 					}
-	// 				}
+	// 				memcpy(&mOutput->Data(batch*FieldCount + sub_batch, id),
+	// 					&mInput->Data(batch, i, x - FieldWidth / 2, 0), FieldWidth * InputDepth * sizeof(Float));
+    //
+	// 				id += FieldWidth*InputDepth;
 	// 			}
 	// 			sub_batch++;
 	// 		}
 	// 	}
 	// }
+}
+
+void Im2ColNeuron::backprop()
+{
+	for (uint64_t batch = 0;batch<BatchSize;batch++)
+	{
+		uint64_t sub_batch = 0;
+		for (uint64_t y = 0;y <= InputHeight - FieldHeight;y++)
+		{
+			for (uint64_t x = 0;x <= InputWidth - FieldWidth;x++)
+			{
+				uint64_t id = 0;
+				for(uint64_t i = y;i < y+FieldHeight;i++)
+				{
+					for(uint64_t j = x;j<x+FieldWidth;j++)
+					{
+						for(uint64_t k = 0;k<InputDepth;k++)
+						{
+							mInput->Delta(batch, i, j, k) += mOutput->Delta(batch*FieldCount + sub_batch, id);
+							id++;
+						}
+					}
+				}
+				sub_batch++;
+			}
+		}
+	}
 }
 
 std::vector<Blob*> Im2ColNeuron::getVariables()
