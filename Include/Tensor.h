@@ -79,3 +79,8 @@ inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_
 		beta,
 		res->mData, res->mLD);
 }
+
+inline void add_vectors(Tensor* src, Tensor* dest, Float alpha)
+{
+	cblas_saxpy(src->mSize, alpha, src->mData, 1, dest->mData, 1);
+}

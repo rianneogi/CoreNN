@@ -91,9 +91,9 @@ void Im2ColNeuron::backprop()
 				uint64_t id = 0;
 				for(uint64_t i = y;i < y+FieldHeight;i++)
 				{
-					for(uint64_t j = x;j<x+FieldWidth;j++)
+					for(uint64_t j = x;j < x+FieldWidth;j++)
 					{
-						for(uint64_t k = 0;k<InputDepth;k++)
+						for(uint64_t k = 0;k<InputDepth;k++) 
 						{
 							mInput->Delta(batch, i, j, k) += mOutput->Delta(batch*FieldCount + sub_batch, id);
 							id++;

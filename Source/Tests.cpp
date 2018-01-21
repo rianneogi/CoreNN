@@ -372,9 +372,9 @@ void test_conv()
 	b.addNeuron(new Im2ColNeuron(l1tanhBlob, l2convBlob, 3, 3));
 	//l1tanhBlob->reshape(make_shape(batch_size, 10 * 26 * 26));
 	b.addNeuron(new FullyConnectedNeuron(l2convBlob, l2fcBlob, initializer));
-	b.addNeuron(new TanhNeuron(l2fcBlob, l2tanhBlob));
+	b.addNeuron(new LeakyReLUNeuron(l2fcBlob, l2tanhBlob, 0.05));
 	b.addNeuron(new FullyConnectedNeuron(l2tanhBlob, l3fcBlob, initializer));
-	b.addNeuron(new TanhNeuron(l3fcBlob, l3tanhBlob));
+	b.addNeuron(new LeakyReLUNeuron(l3fcBlob, l3tanhBlob, 0.05));
 	b.addErrorFunction(new MeanSquaredError(l3tanhBlob));
 	//l1tanhBlob->reshape(make_shape(batch_size * 26 * 26, 10));
 
