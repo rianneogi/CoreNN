@@ -3,7 +3,7 @@
 
 #include "NNInclude.h"
 
-const std::string TEST_DATA_PATH = "../../Data/";
+const std::string TEST_DATA_PATH = "../Data/";
 
 //Vector binaryrep(int x, int size)
 //{
