@@ -10,12 +10,12 @@ cl_program gCLProgram;
 cl_kernel gKernelMatAdd;
 cl_kernel gKernelMatSub;
 
-#include <CL\cl_ext.h>
+// #include <CL\cl_ext.h>
 
 inline void checkErr(cl_int err, const char* name) {
 	if (err != CL_SUCCESS) {
 		std::cerr << "ERROR: " << name << " (" << err << ")" << std::endl;
-		_getch();
+		// _getch();
 	}
 }
 
@@ -85,7 +85,7 @@ int initCL()
 		std::cout << "Error::clBuildProgram: " << err << std::endl;
 		std::cout << program_log << std::endl;
 		free(program_log);
-		_getch();
+		// _getch();
 		//exit(0);
 	}
 

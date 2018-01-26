@@ -1,5 +1,5 @@
 -std=c++14
--I/Include
--IC:/Documents/Code/Libraries/clBLAS-2.13.0-Windows-x64/include
--IC:/Program Files (x86)/AMD APP SDK/3.0/include
--IC:/Documents/Code/Libraries/OpenBLAS-v0.2.19-Win64-int32/include
+-IInclude
+-I/home/rian/Documents/Code/Libraries/OpenBLAS/include
+-I/opt/AMDAPPSDK-3.0/include
+-I/home/rian/Documents/Code/Libraries/clBLAS-2.12.0-Linux-x64/include

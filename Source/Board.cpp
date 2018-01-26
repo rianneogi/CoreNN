@@ -87,7 +87,7 @@ bool Board::setUp()
 		if(mNeurons[i]->init() == false)
 		{
 			printf("ERROR: Error in set up of Neuron %d", i);
-			_getch();
+			// _getch();
 			res = false;
 		}
 	}
@@ -407,7 +407,7 @@ void Board::load_variables(std::string filename)
 		for (uint64_t j = 0; j < mOptimizer->Variables[i]->Data.mSize; j++)
 		{
 			file.read(mem, sizeof(Float));
-			memcpy(&mOptimizer->Variables[i]->Data(j), mem, sizeof(Float));
+			std:memcpy(&mOptimizer->Variables[i]->Data(j), mem, sizeof(Float));
 			//file >> mBoard->mOptimizer->Variables[i]->Data(j);
 		}
 		//file << "\n";
@@ -421,7 +421,7 @@ void Board::copy_variables(const Board* b)
 	for (size_t i = 0; i < mOptimizer->Variables.size(); i++)
 	{
 		assert(mOptimizer->Variables[i]->Data.mSize==b->mOptimizer->Variables[i]->Data.mSize);
-		memcpy(mOptimizer->Variables[i]->Data.mData, b->mOptimizer->Variables[i]->Data.mData,
+		std::memcpy(mOptimizer->Variables[i]->Data.mData, b->mOptimizer->Variables[i]->Data.mData,
 			sizeof(Float)*mOptimizer->Variables[i]->Data.mSize);
 	}
 }

@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project(CoreNN)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 SET(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
@@ -10,15 +14,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 
 # SET(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Source)
 
-include_directories("C:\\Documents\\Code\\Projects\\CoreNN\\Include")
+include_directories("Include")
 
-include_directories("C:\\Documents\\Code\\Libraries\\clBLAS-2.13.0-Windows-x64\\include")
-include_directories("C:\\Program Files (x86)\\AMD APP SDK\\3.0\\include")
-include_directories("C:\\Documents\\Code\\Libraries\\OpenBLAS-v0.2.19-Win64-int32\\include")
+include_directories("/home/rian/Documents/Code/Libraries/OpenBLAS/include")
+include_directories("/opt/AMDAPPSDK-3.0/include")
+include_directories("/home/rian/Documents/Code/Libraries/clBLAS-2.12.0-Linux-x64/include")
 
-link_directories("C:\\Program Files %28x86%29\\AMD APP SDK\\3.0\\lib\\x86_64")
-link_directories("C:\\Documents\\Code\\Libraries\\OpenBLAS-v0.2.19-Win64-int32\\lib")
-link_directories("C:\\Documents\\Code\\Libraries\\clBLAS-2.13.0-Windows-x64\\lib64\\import")
+link_directories("/home/rian/Documents/Code/Libraries/OpenBLAS/lib")
+link_directories("/opt/AMDAPPSDK-3.0/lib/x86_64")
+link_directories("/home/rian/Documents/Code/Libraries/clBLAS-2.12.0-Linux-x64/lib64")
 
 file(GLOB SOURCE_FILES
     Source/*.cpp
@@ -36,11 +40,11 @@ file(GLOB SOURCE_FILES
 )
 
 add_library(CoreNN STATIC ${SOURCE_FILES})
-target_link_libraries(CoreNN OpenCL.lib)
-target_link_libraries(CoreNN libopenblas.dll.lib)
-target_link_libraries(CoreNN clBLAS.lib)
+target_link_libraries(CoreNN libopenblas.a)
+target_link_libraries(CoreNN libOpenCL.so)
+target_link_libraries(CoreNN libclblas.so)
 
 add_executable(CoreNN_test ${SOURCE_FILES})
-target_link_libraries(CoreNN_test OpenCL.lib)
-target_link_libraries(CoreNN_test libopenblas.dll.lib)
-target_link_libraries(CoreNN_test clBLAS.lib)
+target_link_libraries(CoreNN_test libopenblas.a)
+target_link_libraries(CoreNN_test libOpenCL.so)
+target_link_libraries(CoreNN_test libclblas.so)

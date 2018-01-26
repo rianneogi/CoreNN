@@ -12,7 +12,7 @@ inline double sigmoid(double x)
 
 inline double tanh_NN(double x)
 {
-	return std::tanh(x);
+	return tanh(x);
 }
 
 inline double square(double x)

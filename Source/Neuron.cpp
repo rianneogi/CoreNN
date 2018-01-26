@@ -17,7 +17,7 @@ std::vector<Blob*> Neuron::getVariables()
 bool Neuron::init()
 {
     printf("default init called\n");
-    _getch();
+    // _getch();
 	return true;
 }
 

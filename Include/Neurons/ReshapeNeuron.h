@@ -1,5 +1,5 @@
 #pragma once
-#include "..\Neuron.h"
+#include "Neuron.h"
 class ReshapeNeuron :
 	public Neuron
 {

@@ -3,7 +3,7 @@
 #include <chrono>
 #include <sys/timeb.h>
 #include <iostream>
-#include <conio.h>
+// #include <conio.h>
 
 #pragma warning(disable: 4996) // Function _ftime() may be unsafe
 
@@ -26,8 +26,7 @@ public:
 };
 
 inline uint64_t system_time_to_msec() {
-	_timeb t;
-	_ftime(&t);
+	timeb t;
+	ftime(&t);
 	return t.time * 1000LL + t.millitm;
 }
-

@@ -27,7 +27,7 @@ void Clock::Reset()
 	time = 0;
 }
 
-unsigned long long Clock::ElapsedMilliseconds()
+uint64_t Clock::ElapsedMilliseconds()
 {
     return time/1000;
 }

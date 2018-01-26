@@ -95,7 +95,7 @@ void Tensor::copyFromTensor(const Tensor& other)
 	assert(mSize == other.mSize);
 	mShape = other.mShape;
 	mLD = other.mLD;
-	memcpy(mData, other.mData, other.mSize*sizeof(Float));
+	std::memcpy(mData, other.mData, other.mSize*sizeof(Float));
 }
 
 void Tensor::allocateCPU()

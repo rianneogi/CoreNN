@@ -9,7 +9,8 @@
 #include "math.h"
 #include <vector>
 #include <iostream>
-#include "conio.h"
+#include <cstring>
+// #include <conio>
 #include "time.h"
 #include <fstream>
 

@@ -1,4 +1,4 @@
-#include <intrin.h>
+#include <x86intrin.h>
 #include "Tests.h"
 
 #include "NNInclude.h"
@@ -65,15 +65,15 @@ Tensor openidx_input(std::string filename)
 
 	file.read(data_32, 4);
 	memcpy(&num, data_32, 4);
-	num = _byteswap_ulong(num);
+	num = __builtin_bswap32(num);
 
 	file.read(data_32, 4);
 	memcpy(&row, data_32, 4);
-	row = _byteswap_ulong(row);
+	row = __builtin_bswap32(row);
 
 	file.read(data_32, 4);
 	memcpy(&col, data_32, 4);
-	col = _byteswap_ulong(col);
+	col = __builtin_bswap32(col);
 
 	//file >> num >> row >> col;
 	printf("input size: %d %d %d\n", num, row, col);
@@ -116,7 +116,7 @@ Tensor openidx_output(std::string filename, size_t output_size)
 	char* data_32 = new char[4];
 	file.read(data_32, 4);
 	memcpy(&num, data_32, 4);
-	num = _byteswap_ulong(num);
+	num = __builtin_bswap32(num);
 	//file >> num;
 	printf("output size: %d\n", num);
 	Tensor result(make_shape(num, 10));
@@ -485,7 +485,7 @@ void test_gemm()
 	t2_t.freeCPU();
 	t3.freeCPU();
 
-	_getch();
+	// _getch();
 }
 
 void test_tensor()
@@ -544,7 +544,7 @@ void test_tensor()
 
 	s.print();
 	s2.print();
-	_getch();
+	// _getch();
 }
 
 void test_im2col()
@@ -740,5 +740,5 @@ void test_diag()
 
 	printf("\n %f %f %f \n", 2*input.sum(), l1convBlob->Data.sum(), 2 * input.sum() - l1convBlob->Data.sum());
 
-	_getch();
+	// _getch();
 }
