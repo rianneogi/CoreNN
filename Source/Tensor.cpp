@@ -2,7 +2,7 @@
 
 #define USE_MALLOC
 
-Tensor::Tensor() : mData(NULL), mSize(0), mMemory(NULL), mLD(0)
+Tensor::Tensor() : mData(NULL), mSize(0), mMemory(NULL), mAllocSize(0), mLD(0), mStart(NULL)
 {
 }
 
@@ -10,13 +10,15 @@ Tensor::Tensor() : mData(NULL), mSize(0), mMemory(NULL), mLD(0)
 //{
 //}
 
-Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1), mMemory(NULL), mLD(mShape[mShape.size() - 1])
+Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1), mMemory(NULL), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size() - 1]), mStart(NULL)
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
 	for (unsigned int x : mShape)
 	{
 		mSize *= x;
+		mOffset.push_back(0);
 	}
+	mAllocSize = mSize;
 	//printf("Size : %d\n", mSize);
 	allocateCPU();
 #ifdef USE_GPU
@@ -24,22 +26,41 @@ Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1),
 #endif
 }
 
-Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mLD(mShape[mShape.size()-1])
+Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
 	for (unsigned int x : mShape)
 	{
 		mSize *= x;
+		mOffset.push_back(0);
 	}
+	mAllocSize = mSize;
 }
 
-Tensor::Tensor(Float* data, const TensorShape& shape, uint64_t ld) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mLD(ld)
+// Tensor::Tensor(Float* data, const TensorShape& shape, uint64_t ld) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mLD(ld)
+// {
+// 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
+// 	for (unsigned int x : mShape)
+// 	{
+// 		mSize *= x;
+// 	}
+// }
+
+Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape) : mData(data), mAllocShape(shape), mSize(1), 
+	mMemory(NULL), mShape(subshape), mOffset(offset), mAllocSize(1), mLD(mAllocShape[mAllocShape.size()-1])
 {
-	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
-	for (unsigned int x : mShape)
+	assert(subshape.size()==shape.size());
+	assert(offset.size()==shape.size());
+	
+	uint64_t off = 1;
+	for(size_t i = 0;i<shape.size();i++)
 	{
-		mSize *= x;
+		assert(mOffset[i] + mShape[i] <= mAllocShape[i]);
+		mSize *= mShape[i];
+		mAllocSize *= mAllocShape[i];
+		off *= mOffset[i]+1;
 	}
+	mStart = &mData[off-1];
 }
 
 Tensor::~Tensor()
@@ -51,10 +72,10 @@ Tensor::~Tensor()
 Float& Tensor::operator()(uint64_t a) const
 {
 #ifdef NN_DEBUG
-	assert(a < mSize);
+	assert(a < mAllocSize);
 #endif
-	//return mData[a];
-	return mData[(a/mShape[mShape.size()-1])*mLD + a%mShape[mShape.size()-1]];
+	return mData[a];
+	// return mData[(a/mShape[mShape.size()-1])*mLD + a%mShape[mShape.size()-1]];
 }
 
 Float& Tensor::operator()(uint64_t a, uint64_t b) const
@@ -64,7 +85,7 @@ Float& Tensor::operator()(uint64_t a, uint64_t b) const
 	assert(a < mShape[0]);
 	assert(b < mShape[1]);
 #endif
-	return mData[a*mLD + b];
+	return mStart[(a)*mLD + b];
 }
 
 Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c) const
@@ -75,7 +96,7 @@ Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c) const
 	assert(b < mShape[1]);
 	assert(c < mShape[2]);
 #endif
-	return mData[a*mShape[1]*mShape[2] + b*mShape[2] + c];
+	return mStart[(a)*mShape[1]*mShape[2] + (b)*mShape[2] + c];
 }
 
 Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const
@@ -87,14 +108,14 @@ Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const
 	assert(c < mShape[2]);
 	assert(d < mShape[3]);
 #endif
-	return mData[a*mShape[1]*mShape[2]*mShape[3] + b*mShape[2]*mShape[3] + c*mShape[3] + d];
+	return mStart[(a)*mShape[1]*mShape[2]*mShape[3] + (b)*mShape[2]*mShape[3] + (c)*mShape[3] + d];
 }
 
 void Tensor::copyFromTensor(const Tensor& other)
 {
 	assert(mSize == other.mSize);
 	mShape = other.mShape;
-	mLD = other.mLD;
+	// mLD = other.mLD;
 	std::memcpy(mData, other.mData, other.mSize*sizeof(Float));
 }
 
@@ -111,6 +132,7 @@ void Tensor::allocateCPU()
 	{
 		printf("ERROR: Cant allocate memory for tensor, Size: %d\n", mSize);
 	}
+	mStart = mData;
 #else
 	mData = new Float[mSize];
 #endif
@@ -144,9 +166,11 @@ void Tensor::freeCPU()
 #ifdef USE_MALLOC
 		free(mData);
 		mData = NULL;
+		mStart = NULL;
 #else
 		delete[] mData;
 		mData = NULL;
+		mStart = NULL;
 #endif
 	}
 }
@@ -226,7 +250,30 @@ void Tensor::setidentity()
 void Tensor::reshape(const TensorShape& shape)
 {
 	mShape = shape;
+	mAllocShape = shape;
+	mSize = mAllocSize;
 	mLD = shape[mShape.size()-1];
+	
+	mStart = mData;
+	for(size_t i = 0;i<mOffset.size();i++)
+	{
+		mOffset[i] = 0;
+	}
+}
+
+void Tensor::reshape(const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape)
+{
+	mAllocShape = shape;
+	mShape = subshape;
+	mOffset = offset;
+	uint64_t off = 1;
+	for(size_t i = 0;i<shape.size();i++)
+	{
+		assert(mOffset[i] + mShape[i] <= mAllocShape[i]);
+		mSize *= mShape[i];
+		off *= mOffset[i]+1;
+	}
+	mStart = &mData[off-1];
 }
 
 Float Tensor::sum()
@@ -239,17 +286,17 @@ Float Tensor::sum()
 	return res;
 }
 
-//Tensor Tensor::subtensor(const TensorShape& begin, const TensorShape& size)
-//{
-//	assert(begin.size() == mShape.size() && size.size() == mShape.size());
-//	unsigned int ptr = 0;
-//	for (unsigned int i = 0; i <= begin.size(); i++)
-//	{
-//		ptr *= mShape[i];
-//		ptr += begin[i];
-//	}
-//	return Tensor(&mData[ptr], size);
-//}
+Tensor Tensor::subtensor(const TensorShape& begin, const TensorShape& size)
+{
+	assert(begin.size() == mShape.size() && size.size() == mShape.size());
+	// unsigned int ptr = 0;
+	// for (unsigned int i = 0; i <= begin.size(); i++)
+	// {
+	// 	ptr *= mShape[i];
+	// 	ptr += begin[i];
+	// }
+	return Tensor(mData, mShape, begin, size);
+}
 
 Tensor Tensor::cut(uint64_t begin, uint64_t len) const
 {
@@ -259,7 +306,14 @@ Tensor Tensor::cut(uint64_t begin, uint64_t len) const
 #endif
 	TensorShape shape = mShape;
 	shape[0] = len;
-	return Tensor(&mData[begin*(mSize/mShape[0])], shape);
+	// return Tensor(&mData[begin*(mSize/mShape[0])], shape);
+	TensorShape offset;
+	offset.push_back(begin);
+	for(size_t i = 1; i<mShape.size();i++)
+	{
+		offset.push_back(0);
+	}
+	return Tensor(mData, mShape, offset, shape);
 }
 
 Tensor Tensor::cut2(uint64_t begin, uint64_t len) const
@@ -269,7 +323,8 @@ Tensor Tensor::cut2(uint64_t begin, uint64_t len) const
 #endif
 	TensorShape shape = mShape;
 	shape[1] = len;
-	return Tensor(&mData[begin], shape, mLD);
+	TensorShape offset = make_shape(0, begin);
+	return Tensor(mData, mShape, offset, shape);
 }
 
 Tensor Tensor::submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const
@@ -280,7 +335,10 @@ Tensor Tensor::submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, 
 	assert(begin_col + cols <= mShape[1]);
 #endif
 	TensorShape shape = make_shape(rows, cols);
-	return Tensor(&mData[begin_row*mLD + begin_col], shape, mLD);
+	TensorShape offset = make_shape(begin_row, begin_col);
+	
+	// #error fix this
+	return Tensor(mData, mShape, offset, shape);
 }
 
 uint64_t Tensor::rows() const

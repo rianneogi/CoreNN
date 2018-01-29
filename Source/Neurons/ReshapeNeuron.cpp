@@ -8,16 +8,40 @@ ReshapeNeuron::ReshapeNeuron(Blob* input, TensorShape output_shape) : mInput(inp
 {
 	//assert(input->Data.mSize == output->Data.mSize);
 	InputShape = input->Data.mShape;
+	
 	OutputShape = output_shape;
+}
+
+ReshapeNeuron::ReshapeNeuron(Blob* input, TensorShape output_shape, TensorShape output_offset, TensorShape output_subshape) : mInput(input)
+{
+	//assert(input->Data.mSize == output->Data.mSize);
+	InputShape = input->Data.mAllocShape;
+	InputOffset = input->Data.mOffset;
+	InputSubshape = input->Data.mShape;
+	
+	OutputShape = output_shape;
+	OutputOffset = output_offset;
+	OutputSubshape = output_subshape;
 }
 
 ReshapeNeuron::~ReshapeNeuron()
 {
 }
 
+bool ReshapeNeuron::init()
+{
+	uint64_t size = 1;
+	for(size_t i = 0;i<OutputShape.size();i++)
+	{
+		size *= OutputShape[i];
+	}
+	assert(size==mInput->Data.mAllocSize);
+	forward();
+}
+
 void ReshapeNeuron::forward()
 {
-	mInput->reshape(OutputShape);
+	mInput->reshape(OutputShape, OutputOffset, OutputSubshape);
 	//memcpy(&mOutput->Data, &mInput->Data, sizeof(Float)*mInput->Data.mSize);
 	/*for (int i = 0; i < mOutput->Data.mSize; i++)
 	{
@@ -42,5 +66,5 @@ std::vector<Blob*> ReshapeNeuron::getVariables()
 
 void ReshapeNeuron::reset()
 {
-	mInput->reshape(InputShape);
+	mInput->reshape(InputShape, InputOffset, InputSubshape);
 }

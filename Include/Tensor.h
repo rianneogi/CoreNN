@@ -12,20 +12,26 @@ public:
 	uint64_t mSize;
 	Float* mData;
 	cl_mem mMemory;
+	
+	TensorShape mOffset;
+	Float* mStart;
+	TensorShape mAllocShape;
+	uint64_t mAllocSize;
 	uint64_t mLD; //Size of leading dimension
 
 	Tensor();
 	//Tensor(const Tensor& other);
 	Tensor(const TensorShape& shape); //initialize tensor allocated with given shape
 	Tensor(Float* data, const TensorShape& shape); //initialize tensor pointing to existing data
-	Tensor(Float* data, const TensorShape& shape, uint64_t ld); //initialize tensor pointing to existing data and specify leading dimension
+	// Tensor(Float* data, const TensorShape& shape, uint64_t ld); //initialize tensor pointing to existing data and specify leading dimension
+	Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape); //initialize tensor pointing to existing data and specify leading dimension
 	~Tensor();
 
-	Float& operator()(uint64_t a) const;
+	Float& operator()(uint64_t a) const; //Raw access from allocated memory (does not use offsets or shape)
 	Float& operator()(uint64_t a, uint64_t b) const;
 	Float& operator()(uint64_t a, uint64_t b, uint64_t c) const;
 	Float& operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const;
-
+	
 	void copyFromTensor(const Tensor& other); //dupliates data from other tensor
 
 	void allocateCPU();
@@ -42,11 +48,12 @@ public:
 	void setconstant(Float c);
 	void setidentity();
 
-	void reshape(const TensorShape& shape);
-
+	void reshape(const TensorShape& shape); //Reshapes the allocated shape, and sets subshape to allocated shape
+	void reshape(const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape);
+	
 	Float sum();
 
-	//Tensor subtensor(const TensorShape& begin, const TensorShape& size);
+	Tensor subtensor(const TensorShape& begin, const TensorShape& size);
 	Tensor cut(uint64_t begin, uint64_t len) const; //cuts the tensor based on primary dimension
 	Tensor cut2(uint64_t begin, uint64_t len) const; //cuts the tensor based on secondary dimension
 	Tensor submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const;
@@ -80,7 +87,7 @@ inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_
 		res->mData, res->mLD);
 }
 
-inline void add_vectors(Tensor* src, Tensor* dest, Float alpha)
+inline void add_vectors(Tensor* src, Tensor* dest, Float alpha) //test this
 {
 	cblas_saxpy(src->mSize, alpha, src->mData, 1, dest->mData, 1);
 }

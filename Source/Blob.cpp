@@ -38,6 +38,17 @@ void Blob::reshape(const TensorShape& shape)
 	Delta.reshape(shape);
 }
 
+void Blob::reshape(const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape)
+{
+	Data.reshape(shape);
+	Delta.reshape(shape);
+}
+
+Blob* Blob::subtensor(const TensorShape& begin, const TensorShape& size)
+{
+	return (new Blob(Data.subtensor(begin,size), Delta.subtensor(begin,size)));
+}
+
 Blob* Blob::cut(uint64_t start, uint64_t len) const
 {
 	return (new Blob(Data.cut(start, len), Delta.cut(start, len)));
