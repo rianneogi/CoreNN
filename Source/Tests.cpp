@@ -511,39 +511,28 @@ void test_tensor()
 	Tensor tx = t1.submatrix(2, 2, 2, 3);
 	Tensor ty = t2.submatrix(2, 2, 3, 4);
 
-	Tensor ti(make_shape(2, 3));
-	for (int i = 2; i < 4; i++)
-	{
-		for (int j = 2; j < 5; j++)
-		{
-			ti(i-2, j-2) = i * 10 + j;
-		}
-	}
-
-	Tensor tj(make_shape(3, 4));
-	for (int i = 2; i < 5; i++)
-	{
-		for (int j = 2; j < 6; j++)
-		{
-			tj(i-2, j-2) = 100 + i * 10 + j;
-		}
-	}
+	Tensor ti = t1.cut(2, 4);
+	Tensor tj = t2.cut2(2,4);
 
 	Tensor s(make_shape(2, 4));
 	s.setzero();
 	Tensor s2(make_shape(2, 4));
 	s2.setzero();
 
+	t1.print();
+	t2.print();
+	printf("\n\n");
 	tx.print();
 	ty.print();
+	printf("\n\n");
 	ti.print();
 	tj.print();
 
 	gemm_cpu(&tx, &ty, &s, CblasNoTrans, CblasNoTrans, 1, 0);
 	gemm_cpu(&ti, &tj, &s2, CblasNoTrans, CblasNoTrans, 1, 0);
 
-	s.print();
-	s2.print();
+	// s.print();
+	// s2.print();
 	// _getch();
 }
 

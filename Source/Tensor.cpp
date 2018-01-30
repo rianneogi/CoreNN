@@ -52,15 +52,18 @@ Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset,
 	assert(subshape.size()==shape.size());
 	assert(offset.size()==shape.size());
 	
-	uint64_t off = 1;
+	uint64_t off = 0;
 	for(size_t i = 0;i<shape.size();i++)
 	{
 		assert(mOffset[i] + mShape[i] <= mAllocShape[i]);
 		mSize *= mShape[i];
 		mAllocSize *= mAllocShape[i];
-		off *= mOffset[i]+1;
+		off += mOffset[i];
+		if(i != shape.size()-1)
+			off *= mAllocShape[i];
 	}
-	mStart = &mData[off-1];
+	mStart = &mData[off];
+	// printf("mStart is %d\n", off);
 }
 
 Tensor::~Tensor()

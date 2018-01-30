@@ -37,6 +37,8 @@ bool ReshapeNeuron::init()
 	}
 	assert(size==mInput->Data.mAllocSize);
 	forward();
+	
+	return true;
 }
 
 void ReshapeNeuron::forward()
