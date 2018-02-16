@@ -35,6 +35,7 @@ Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shap
 		mOffset.push_back(0);
 	}
 	mAllocSize = mSize;
+	mStart = mData;
 }
 
 // Tensor::Tensor(Float* data, const TensorShape& shape, uint64_t ld) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mLD(ld)

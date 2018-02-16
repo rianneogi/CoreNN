@@ -116,8 +116,8 @@ int main()
 
 	//initCL();
 
-	test_tensor();
-	// test_fc();
+	// test_tensor();
+	test_fc();
 	// test_conv();
 	//test_im2col();
 

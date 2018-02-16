@@ -22,7 +22,7 @@ Float MeanSquaredError::calculateError()
 		return 0;
 
 	Float error = 0;
-	for (int i = 0; i < mOutput->Data.mSize; i++)
+	for (uint64_t i = 0; i < mOutput->Data.mAllocSize; i++)
 	{
 		error += 0.5*(mOutput->Data(i) - mTarget(i))*(mOutput->Data(i) - mTarget(i));
 		mOutput->Delta(i) += mOutput->Data(i) - mTarget(i);

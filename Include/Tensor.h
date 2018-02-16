@@ -55,7 +55,7 @@ public:
 
 	Tensor subtensor(const TensorShape& begin, const TensorShape& size);
 	Tensor cut(uint64_t begin, uint64_t len) const; //cuts the tensor based on primary dimension
-	Tensor cut2(uint64_t begin, uint64_t len) const; //cuts the tensor based on secondary dimension
+	Tensor cut2(uint64_t begin, uint64_t len) const; //cuts the tensor based on last dimension
 	Tensor submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const;
 
 	uint64_t rows() const;
@@ -76,15 +76,16 @@ inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_
 	assert(M == res->rows());
 	assert(N == res->cols());
 #endif
+	// printf("%d %d %d %d %d %d\n", m1->mData, m1->mStart, m2->mData, m2->mStart, res->mData, res->mStart);
 	cblas_sgemm(CblasRowMajor, trans_m1, trans_m2,
 		res->rows(), //M
 		res->cols(), //N
 		trans_m1 == CblasNoTrans ? m1->cols() : m1->rows(), //K
 		alpha,
-		m1->mData, m1->mLD,
-		m2->mData, m2->mLD,
+		m1->mStart, m1->mLD,
+		m2->mStart, m2->mLD,
 		beta,
-		res->mData, res->mLD);
+		res->mStart, res->mLD);
 }
 
 inline void add_vectors(Tensor* src, Tensor* dest, Float alpha) //test this
