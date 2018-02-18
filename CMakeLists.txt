@@ -12,7 +12,7 @@ endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funsafe-math-optimizations")
+set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 -funsafe-math-optimizations")
 
 SET(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR})
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Lib)
@@ -21,6 +21,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/Bin)
 # SET(CMAKE_BUILD_TYPE RELEASE)
 
 # SET(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/Source)
+
+find_package( Curses REQUIRED )
+include_directories( ${CURSES_INCLUDE_DIRS} )
 
 include_directories("Include")
 
@@ -52,9 +55,11 @@ target_link_libraries(CoreNN libopenblas.a)
 target_link_libraries(CoreNN libOpenCL.so)
 target_link_libraries(CoreNN libclblas.so)
 target_link_libraries(CoreNN pthread)
+target_link_libraries( CoreNN ${CURSES_LIBRARIES} )
 
 add_executable(CoreNN_test ${SOURCE_FILES})
 target_link_libraries(CoreNN_test libopenblas.a)
 target_link_libraries(CoreNN_test libOpenCL.so.1)
 target_link_libraries(CoreNN_test libclBLAS2.so)
 target_link_libraries(CoreNN_test pthread)
+target_link_libraries( CoreNN_test ${CURSES_LIBRARIES} )

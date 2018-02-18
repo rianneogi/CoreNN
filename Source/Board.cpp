@@ -1,5 +1,7 @@
 #include "Board.h"
 
+#include <ncurses.h>
+
 Board::Board() : mOptimizer(nullptr), mUseOptimizer(true)
 {
 }
@@ -336,6 +338,13 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 		{
 			tmp_input = inputs.cut(batch_size*j, batch_size);
 			tmp_output = outputs.cut(batch_size*j, batch_size);
+			
+			// printf("input:\n");
+			// tmp_input.print();
+			// printf("\noutput\n");
+			// tmp_output.print();
+			// int x;
+			// std::cin >> x;
 
 			std::vector<Tensor> placeholders;
 			placeholders.push_back(tmp_input);

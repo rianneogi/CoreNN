@@ -8,3 +8,4 @@ toolbar.cson
 toolbar.json
 toolbar.coffee
 toolbar.js
+.atom-dbg.cson

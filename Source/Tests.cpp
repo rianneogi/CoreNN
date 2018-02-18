@@ -305,7 +305,7 @@ void test_fc()
 	Matrix inputs_test = b6.inputs;
 	Matrix outputs_test = b6.outputs;*/
 
-	b.train(inputs_train, outputs_train, epochs, batch_size);
+	b.train(inputs_train, outputs_train, 0, batch_size);
 	/*for (int i = 0; i < 10; i++)
 	{
 	b.train(b1.inputs, b1.outputs, 1, 100);
@@ -320,7 +320,12 @@ void test_fc()
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
 		for (size_t j = 0; j < batch_size; j++)
 		{
-			if (getoutput(o.cut(j, 1)) == getoutput(outputs_test.cut(i*batch_size + j, 1)))
+			unsigned int result = getoutput(o.cut(j, 1));
+			o.cut(j,1).print();
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			outputs_test.cut(i*batch_size + j, 1).print();
+			printf("%d %d\n", result, target);
+			if (result == target)
 			{
 				acc++;
 			}
@@ -397,7 +402,9 @@ void test_conv()
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
 		for (int j = 0; j < batch_size; j++)
 		{
-			if (getoutput(o.cut(j, 1)) == getoutput(outputs_test.cut(i*batch_size + j, 1)))
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			if (result == target)
 			{
 				acc++;
 			}
