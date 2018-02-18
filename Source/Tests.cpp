@@ -240,7 +240,7 @@ unsigned int getoutput(const Tensor& output)
 	unsigned int maxid = 0;
 	for (size_t i = 1; i < output.mSize; i++)
 	{
-		if (output(i) > max)
+		if (output(0,i) > max)
 		{
 			max = output(i);
 			maxid = i;
@@ -305,7 +305,7 @@ void test_fc()
 	Matrix inputs_test = b6.inputs;
 	Matrix outputs_test = b6.outputs;*/
 
-	b.train(inputs_train, outputs_train, 0, batch_size);
+	b.train(inputs_train, outputs_train, epochs, batch_size);
 	/*for (int i = 0; i < 10; i++)
 	{
 	b.train(b1.inputs, b1.outputs, 1, 100);
@@ -321,10 +321,13 @@ void test_fc()
 		for (size_t j = 0; j < batch_size; j++)
 		{
 			unsigned int result = getoutput(o.cut(j, 1));
-			o.cut(j,1).print();
 			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
-			outputs_test.cut(i*batch_size + j, 1).print();
-			printf("%d %d\n", result, target);
+			
+			// printf("output1\n");
+			// o.cut(j,1).print();
+			// printf("output2\n");
+			// outputs_test.cut(i*batch_size + j, 1).print();
+			// printf("%d %d\n", result, target);
 			if (result == target)
 			{
 				acc++;

@@ -56,15 +56,17 @@ Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset,
 	uint64_t off = 0;
 	for(size_t i = 0;i<shape.size();i++)
 	{
+		// printf("assert %d %d %d\n", mOffset[i], mShape[i], mAllocShape[i]);
 		assert(mOffset[i] + mShape[i] <= mAllocShape[i]);
 		mSize *= mShape[i];
 		mAllocSize *= mAllocShape[i];
 		off += mOffset[i];
 		if(i != shape.size()-1)
-			off *= mAllocShape[i];
+			off *= mAllocShape[i+1];
+		// printf("offstep: %d %d %d\n", off, mOffset[i], mAllocShape[i]);
 	}
 	mStart = &mData[off];
-	// printf("mStart is %d\n", off);
+	// printf("mStart is %d, %d, %d, size %d\n", off, offset[0], offset[1], mAllocSize);
 }
 
 Tensor::~Tensor()
