@@ -117,7 +117,8 @@ int main()
 	//initCL();
 
 	// test_tensor();
-	test_fc();
+	test_gemm_subtensor();
+	// test_fc();
 	// test_conv();
 	//test_im2col();
 

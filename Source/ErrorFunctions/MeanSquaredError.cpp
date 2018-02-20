@@ -4,7 +4,7 @@ MeanSquaredError::MeanSquaredError() : ErrorFunction()
 {
 }
 
-MeanSquaredError::MeanSquaredError(Blob* output) : ErrorFunction(output, Tensor(output->Data.mShape))
+MeanSquaredError::MeanSquaredError(Blob* output) : ErrorFunction(output, Tensor(output->Data.mAllocShape))
 {
 }
 

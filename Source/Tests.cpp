@@ -423,6 +423,69 @@ void test_conv()
 	// _getch();
 }
 
+void test_gemm_subtensor()
+{
+	Tensor ten(make_shape(9,9));
+	for(int i = 0;i<9;i++)
+	{
+		for(int j = 0;j<9;j++)
+		{
+			ten(i,j) = rand()%64;
+		}
+	}
+	
+	ten(5, 5) = -1;
+	ten(5, 6) = 1;
+	ten(5, 7) = 4;
+	ten(6, 5) = -4;
+	ten(6, 6) = 0;
+	ten(6, 7) = -3;
+	
+	ten(0, 0) = 2;
+	ten(0, 1) = 3;
+	ten(0, 2) = -2;
+	ten(0, 3) = 1;
+	ten(1, 0) = 4;
+	ten(1, 1) = 0;
+	ten(1, 2) = 5;
+	ten(1, 3) = 6;
+	ten(2, 0) = 7;
+	ten(2, 1) = 8;
+	ten(2, 2) = 9;
+	ten(2, 3) = 10;
+	
+	Tensor tx = ten.subtensor(make_shape(0,0),make_shape(3,4));
+	Tensor ty = ten.subtensor(make_shape(5,5),make_shape(2,3));
+	
+	Tensor t1(make_shape(2, 3));
+	t1(0, 0) = -1;
+	t1(0, 1) = 1;
+	t1(0, 2) = 4;
+	t1(1, 0) = -4;
+	t1(1, 1) = 0;
+	t1(1, 2) = -3;
+	
+	Tensor t2(make_shape(3, 4));
+	t2(0, 0) = 2;
+	t2(0, 1) = 3;
+	t2(0, 2) = -2;
+	t2(0, 3) = 1;
+	t2(1, 0) = 4;
+	t2(1, 1) = 0;
+	t2(1, 2) = 5;
+	t2(1, 3) = 6;
+	t2(2, 0) = 7;
+	t2(2, 1) = 8;
+	t2(2, 2) = 9;
+	t2(2, 3) = 10;
+	
+	Tensor t3(make_shape(2, 4));
+	gemm_cpu(&t1, &t2, &t3, CblasNoTrans, CblasNoTrans, 1, 0);
+	t3.print();
+	gemm_cpu(&ty, &tx, &t3, CblasNoTrans, CblasNoTrans, 1, 0);
+	t3.print();
+}
+
 void test_gemm()
 {
 	Tensor t1(make_shape(2, 3));
