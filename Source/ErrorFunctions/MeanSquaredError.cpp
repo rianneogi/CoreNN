@@ -26,8 +26,8 @@ Float MeanSquaredError::calculateError()
 	{
 		error += 0.5*(mOutput->Data(i) - mTarget(i))*(mOutput->Data(i) - mTarget(i));
 		mOutput->Delta(i) += mOutput->Data(i) - mTarget(i);
+		// printf("err %d %f %f %f\n", i, mOutput->Delta(i), mOutput->Data(i), mTarget(i));
 	}
-	// printf("err %f %f %f\n", mOutput->Delta(0), mOutput->Data(0), mTarget(0));
 	return error;
 }
 

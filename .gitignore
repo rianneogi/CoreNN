@@ -9,3 +9,5 @@ toolbar.json
 toolbar.coffee
 toolbar.js
 .atom-dbg.cson
+_cmt_tmp.cmake
+CMakeToolsMeta.in.txt

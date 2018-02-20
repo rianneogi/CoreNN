@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
+# include(${CMAKE_BINARY_DIR}/CMakeTools/CMakeToolsHelpers.cmake)
+
 project(CoreNN)
 
 set(CMAKE_CXX_STANDARD 14)

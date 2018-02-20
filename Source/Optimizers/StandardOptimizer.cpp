@@ -16,7 +16,7 @@ void StandardOptimizer::optimize()
 {
 	for (size_t i = 0; i < Variables.size(); i++)
 	{
-		Float prev = Variables[i]->Data(0);
+		// Float prev = Variables[i]->Data(0);
 		for (uint64_t j = 0; j < Variables[i]->Data.mSize; j++)
 		{
 			Variables[i]->Data(j) -= LearningRate*Variables[i]->Delta(j);
