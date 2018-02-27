@@ -457,6 +457,13 @@ void test_gemm_subtensor()
 	Tensor tx = ten.subtensor(make_shape(0,0),make_shape(3,4));
 	Tensor ty = ten.subtensor(make_shape(5,5),make_shape(2,3));
 	
+	// printf("tx\n");
+	// tx.print();
+	// Tensor tc(tx.mShape);
+	// tc.copyFromSubtensor(tx);
+	// printf("\n\ntc\n");
+	// tc.print();
+	
 	Tensor t1(make_shape(2, 3));
 	t1(0, 0) = -1;
 	t1(0, 1) = 1;
@@ -551,6 +558,10 @@ void test_gemm()
 	t3.print();
 	gemm_cpu(&t1_t, &t2, &t3, CblasTrans, CblasNoTrans, 1, 0);
 	t3.print();
+	
+	// Result should be:
+	//  30  29  43  45
+	// -29 -36 -19 -34
 
 	t1.freeCPU();
 	t1_t.freeCPU();
@@ -603,6 +614,10 @@ void test_tensor()
 
 	gemm_cpu(&tx, &ty, &s, CblasNoTrans, CblasNoTrans, 1, 0);
 	gemm_cpu(&ti, &tj, &s2, CblasNoTrans, CblasNoTrans, 1, 0);
+	
+	// Result should be:
+	//  30  29  43  45
+	// -29 -36 -19 -34
 
 	// s.print();
 	// s2.print();
