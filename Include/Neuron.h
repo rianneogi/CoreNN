@@ -5,6 +5,8 @@
 class Neuron
 {
 public:
+	std::string Name;
+	
 	Neuron();
 	virtual ~Neuron();
 

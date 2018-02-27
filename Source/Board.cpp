@@ -32,6 +32,7 @@ void Board::addNeuron(Neuron* n, std::string name)
 	// assert(mOptimizer != nullptr);
 	mNeuronNames[name] = mNeurons.size();
 	mNeurons.push_back(n);
+	n->Name = name;
 	// auto variables = n->getVariables();
 	// for (size_t i = 0; i < variables.size(); i++)
 	// {
@@ -254,6 +255,10 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 		// *mPlaceholders[i] = placeholders[i];
 		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
 		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
+		
+		uint64_t x = rand()%placeholders[i].mSize;
+		// printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
+		assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
 		#warning revert this
 	}
 
@@ -261,7 +266,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
 		mNeurons[i]->forward();
-		// printf("forward %d %f %f\n", i, mBlobs[i]->Data(0), mBlobs[i+1]->Data(0));
+		printf("forward %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Data(0), mBlobs[i+1]->Data(0));
 	}
 
 	//Calculate Error
@@ -274,7 +279,12 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	{
 		// printf("backprop %d\n", i);
 		mNeurons[i]->backprop();
-		// printf("%f %d del\n", mOptimizer->Variables[i]->Delta(0), i);
+		printf("backprop %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Delta(0), mBlobs[i+1]->Delta(0));
+	}
+	
+	for(size_t i = 0;i<mOptimizer->Variables.size();i++)
+	{
+		printf("var %d : %s %f\n", i, mOptimizer->Variables[i]->Name.c_str(), mOptimizer->Variables[i]->Delta(0));
 	}
 
 	return error;

@@ -271,18 +271,18 @@ void test_fc()
 	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10));
 	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10));
 
-	b.setOptimizer(new AdamOptimizer(learning_rate));
+	b.setOptimizer(new StandardOptimizer(learning_rate));
 
-	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer));
+	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer), "FC1");
 
-	b.addNeuron(new LeakyReLUNeuron(layer1FCBlob, layer1SigBlob, 0.05));
-	b.addNeuron(new FullyConnectedNeuron(layer1SigBlob, layer2FCBlob, initializer));
-	b.addNeuron(new LeakyReLUNeuron(layer2FCBlob, layer2SigBlob, 0.05));
+	b.addNeuron(new LeakyReLUNeuron(layer1FCBlob, layer1SigBlob, 0.05), "Act1");
+	b.addNeuron(new FullyConnectedNeuron(layer1SigBlob, layer2FCBlob, initializer), "FC2");
+	b.addNeuron(new LeakyReLUNeuron(layer2FCBlob, layer2SigBlob, 0.05), "Act2");
 
 	/*b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, layer3FCBlob, learning_rate));
 	b.addNeuron(new LeakyReLUNeuron(layer3FCBlob, layer3SigBlob, 0.05));*/
-	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob, initializer));
-	b.addNeuron(new LeakyReLUNeuron(outputFCBlob, outputSigBlob, 0.05));
+	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob, initializer), "FC3");
+	b.addNeuron(new LeakyReLUNeuron(outputFCBlob, outputSigBlob, 0.05), "Act3");
 
 	b.addErrorFunction(new MeanSquaredError(outputSigBlob));
 
@@ -487,9 +487,28 @@ void test_gemm_subtensor()
 	t2(2, 3) = 10;
 	
 	Tensor t3(make_shape(2, 4));
+	printf("nono\n");
 	gemm_cpu(&t1, &t2, &t3, CblasNoTrans, CblasNoTrans, 1, 0);
 	t3.print();
 	gemm_cpu(&ty, &tx, &t3, CblasNoTrans, CblasNoTrans, 1, 0);
+	t3.print();
+	
+	printf("transno\n");
+	gemm_cpu(&t1, &t2, &t3, CblasTrans, CblasNoTrans, 1, 0);
+	t3.print();
+	gemm_cpu(&ty, &tx, &t3, CblasTrans, CblasNoTrans, 1, 0);
+	t3.print();
+	
+	printf("notrans\n");
+	gemm_cpu(&t1, &t2, &t3, CblasNoTrans, CblasTrans, 1, 0);
+	t3.print();
+	gemm_cpu(&ty, &tx, &t3, CblasNoTrans, CblasTrans, 1, 0);
+	t3.print();
+	
+	printf("transtrans\n");
+	gemm_cpu(&t1, &t2, &t3, CblasTrans, CblasTrans, 1, 0);
+	t3.print();
+	gemm_cpu(&ty, &tx, &t3, CblasTrans, CblasTrans, 1, 0);
 	t3.print();
 }
 

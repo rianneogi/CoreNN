@@ -53,8 +53,8 @@ bool FullyConnectedNeuron::init()
 	assert(mInitializer!=nullptr);
 	assert(mInput->Data.mShape.size() == 2);
 	assert(mOutput->Data.mShape.size() == 2);
-	Weights = new Blob(make_shape(mInput->Data.cols(), mOutput->Data.cols()));
-	Biases = new Blob(make_shape(1, mOutput->Data.cols()));
+	Weights = new Blob(make_shape(mInput->Data.cols(), mOutput->Data.cols()), Name + "Weights");
+	Biases = new Blob(make_shape(1, mOutput->Data.cols()), Name + "Bias");
 	for (uint64_t i = 0; i < Weights->Data.cols(); i++)
 	{
 		Biases->Data(i) = mInitializer->get_value(i);

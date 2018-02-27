@@ -119,9 +119,10 @@ int main()
 	// test_tensor();
 	// test_gemm();
 	test_gemm_subtensor();
+	//test_im2col();
+	
 	// test_fc();
 	// test_conv();
-	//test_im2col();
 
 	//_getch();
 

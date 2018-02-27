@@ -1,11 +1,15 @@
 #include "Blob.h"
 
-Blob::Blob()
+Blob::Blob() : Name("Empty Blob")
 {
 	printf("WARNING: initializing blob with default contructor\n");
 }
 
-Blob::Blob(const TensorShape& shape) : Data(shape), Delta(shape)
+Blob::Blob(const TensorShape& shape) : Data(shape), Delta(shape), Name("Unnamed Blob")
+{
+}
+
+Blob::Blob(const TensorShape& shape, std::string name) : Data(shape), Delta(shape), Name(name)
 {
 }
 

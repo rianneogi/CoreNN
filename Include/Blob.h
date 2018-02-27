@@ -5,11 +5,14 @@
 class Blob
 {
 public:
+	std::string Name;
+	
 	Tensor Data;
 	Tensor Delta;
 
 	Blob();
 	Blob(const TensorShape& shape);
+	Blob(const TensorShape& shape, std::string name);
 	Blob(Tensor data, Tensor delta);
 	~Blob();
 
