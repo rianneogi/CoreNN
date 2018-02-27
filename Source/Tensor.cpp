@@ -79,11 +79,18 @@ Float& Tensor::at(uint64_t a) const
 {
 	#warning todo: fix this
 	uint64_t off = 0;
-	for(size_t i = 0;i<mShape.size();i++)
+	TensorShape offset_rev;
+	for(int i = mShape.size()-1;i>=0;i--)
 	{
-		off += a%mShape[i];
-		if(i != mShape.size()-1)
-			off *= mShape[i+1];
+		offset_rev.push_back(a%mShape[i]);
+		a = a/mShape[i];
+	}
+	
+	for(size_t i = 0;i<offset_rev.size();i++)
+	{
+		off += offset_rev[offset_rev.size()-1-i];
+		if(i != offset_rev.size()-1)
+			off *= mAllocShape[i+1];
 	}
 	return mStart[off];
 }
@@ -159,7 +166,7 @@ void Tensor::copyFromSubtensor(const Tensor& other)
 	{
 		mData[i] = other.at(i);
 	}
-	std::memcpy(mData, other.mData, other.mAllocSize*sizeof(Float));
+	// std::memcpy(mData, other.mData, other.mAllocSize*sizeof(Float));
 }
 
 void Tensor::allocateCPU()

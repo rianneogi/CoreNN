@@ -253,8 +253,8 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 		// mPlaceholders[i]->mAllocShape = placeholders[i].mAllocShape;
 		// *mPlaceholders[i] = placeholders[i];
 		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
-		mPlaceholders[i]->copyFromTensor(placeholders[i]);
-		#warning(revert this)
+		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
+		#warning revert this
 	}
 
 	//Forward Pass
