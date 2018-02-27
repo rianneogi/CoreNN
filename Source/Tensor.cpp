@@ -75,6 +75,19 @@ Tensor::~Tensor()
 	//	freememory();
 }
 
+Float& Tensor::at(uint64_t a) const
+{
+	#warning todo: fix this
+	uint64_t off = 0;
+	for(size_t i = 0;i<mShape.size();i++)
+	{
+		off += a%mShape[i];
+		if(i != mShape.size()-1)
+			off *= mShape[i+1];
+	}
+	return mStart[off];
+}
+
 Float& Tensor::operator()(uint64_t a) const
 {
 #ifdef NN_DEBUG
@@ -119,14 +132,34 @@ Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const
 
 void Tensor::copyFromTensor(const Tensor& other)
 {
-	assert(mSize == other.mSize);
+	assert(mAllocSize == other.mAllocSize);
 	mShape = other.mShape;
 	mLD = other.mLD;
-	mAllocSize = other.mAllocSize;
+	mSize = other.mSize;
 	mAllocShape = other.mAllocShape;
 	mStart = other.mStart;
 	mOffset = other.mOffset;
-	std::memcpy(mData, other.mData, other.mSize*sizeof(Float));
+	std::memcpy(mData, other.mData, other.mAllocSize*sizeof(Float));
+}
+
+void Tensor::copyFromSubtensor(const Tensor& other)
+{
+	assert(mAllocSize == other.mSize);
+	mAllocShape = other.mShape;
+	mShape = other.mShape;
+	mSize = other.mSize;
+	mLD = other.mShape[other.mShape.size()-1];
+	// mSize = other.mSize;
+	mStart = mData;
+	for (unsigned int x : mShape)
+	{
+		mOffset.push_back(0);
+	}
+	for(uint64_t i = 0;i<other.mSize;i++)
+	{
+		mData[i] = other.at(i);
+	}
+	std::memcpy(mData, other.mData, other.mAllocSize*sizeof(Float));
 }
 
 void Tensor::allocateCPU()

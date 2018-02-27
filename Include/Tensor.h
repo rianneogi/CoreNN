@@ -26,13 +26,16 @@ public:
 	// Tensor(Float* data, const TensorShape& shape, uint64_t ld); //initialize tensor pointing to existing data and specify leading dimension
 	Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape); //initialize tensor pointing to existing data and specify leading dimension
 	~Tensor();
+	
+	Float& at(uint64_t a) const; //slow
 
 	Float& operator()(uint64_t a) const; //Raw access from allocated memory (does not use offsets or shape)
 	Float& operator()(uint64_t a, uint64_t b) const;
 	Float& operator()(uint64_t a, uint64_t b, uint64_t c) const;
 	Float& operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const;
 	
-	void copyFromTensor(const Tensor& other); //dupliates data from other tensor
+	void copyFromTensor(const Tensor& other); //dupliates data from other mData with shape mAllocShape
+	void copyFromSubtensor(const Tensor& other); //duplicates data from mStart with shape mShape
 
 	void allocateCPU();
 	void allocateGPU();
