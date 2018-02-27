@@ -162,7 +162,7 @@ void Tensor::copyFromSubtensor(const Tensor& other)
 	{
 		mOffset.push_back(0);
 	}
-	for(uint64_t i = 0;i<other.mSize;i++)
+	for(uint64_t i = 0;i<mAllocSize;i++)
 	{
 		mData[i] = other.at(i);
 	}
@@ -177,14 +177,15 @@ void Tensor::allocateCPU()
 	}
 	//printf("Allocation tensor of size: %d\n", mSize);
 #ifdef USE_MALLOC
-	mData = (Float*)malloc(mSize * sizeof(Float));
+	mData = (Float*)malloc(mAllocSize * sizeof(Float));
 	if (mData == NULL)
 	{
 		printf("ERROR: Cant allocate memory for tensor, Size: %d\n", mSize);
 	}
 	mStart = mData;
 #else
-	mData = new Float[mSize];
+	mData = new Float[mAllocSize];
+	mStart = mData;
 #endif
 }
 
@@ -409,9 +410,9 @@ uint64_t Tensor::cols() const
 
 void Tensor::print() const
 {
-	for (int i = 0; i < mShape[0]; i++)
+	for (uint64_t i = 0; i < mShape[0]; i++)
 	{
-		for (int j = 0; j < mShape[1]; j++)
+		for (uint64_t j = 0; j < mShape[1]; j++)
 		{
 			printf("%f ", operator()(i, j));
 		}
@@ -421,7 +422,7 @@ void Tensor::print() const
 
 void Tensor::print_raw() const
 {
-	for (int i = 0; i < mSize; i++)
+	for (uint64_t i = 0; i < mSize; i++)
 	{
 		printf("%f ", operator()(i));
 	}

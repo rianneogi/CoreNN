@@ -236,13 +236,13 @@ void printoutput(const Tensor& output)
 unsigned int getoutput(const Tensor& output)
 {
 	assert(output.mSize > 0);
-	double max = output(0);
+	double max = output(0,0);
 	unsigned int maxid = 0;
 	for (size_t i = 1; i < output.mSize; i++)
 	{
 		if (output(0,i) > max)
 		{
-			max = output(i);
+			max = output(0,i);
 			maxid = i;
 		}
 	}
@@ -271,7 +271,7 @@ void test_fc()
 	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10));
 	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10));
 
-	b.setOptimizer(new StandardOptimizer(learning_rate));
+	b.setOptimizer(new AdamOptimizer(learning_rate));
 
 	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer), "FC1");
 
@@ -425,10 +425,10 @@ void test_conv()
 
 void test_gemm_subtensor()
 {
-	Tensor ten(make_shape(9,9));
-	for(int i = 0;i<9;i++)
+	Tensor ten(make_shape(19,19));
+	for(int i = 0;i<19;i++)
 	{
-		for(int j = 0;j<9;j++)
+		for(int j = 0;j<19;j++)
 		{
 			ten(i,j) = rand()%64;
 		}
@@ -440,6 +440,13 @@ void test_gemm_subtensor()
 	ten(6, 5) = -4;
 	ten(6, 6) = 0;
 	ten(6, 7) = -3;
+	
+	ten(15, 15) = -1;
+	ten(16, 15) = 1;
+	ten(17, 15) = 4;
+	ten(15, 16) = -4;
+	ten(16, 16) = 0;
+	ten(17, 16) = -3;
 	
 	ten(0, 0) = 2;
 	ten(0, 1) = 3;
@@ -454,8 +461,23 @@ void test_gemm_subtensor()
 	ten(2, 2) = 9;
 	ten(2, 3) = 10;
 	
+	ten(10, 10) = 2;
+	ten(11, 10) = 3;
+	ten(12, 10) = -2;
+	ten(13, 10) = 1;
+	ten(10, 11) = 4;
+	ten(11, 11) = 0;
+	ten(12, 11) = 5;
+	ten(13, 11) = 6;
+	ten(10, 12) = 7;
+	ten(11, 12) = 8;
+	ten(12, 12) = 9;
+	ten(13, 12) = 10;
+	
 	Tensor tx = ten.subtensor(make_shape(0,0),make_shape(3,4));
 	Tensor ty = ten.subtensor(make_shape(5,5),make_shape(2,3));
+	Tensor tx_t = ten.subtensor(make_shape(10,10),make_shape(4,3));
+	Tensor ty_t = ten.subtensor(make_shape(15,15),make_shape(3,2));
 	
 	// printf("tx\n");
 	// tx.print();
@@ -472,6 +494,14 @@ void test_gemm_subtensor()
 	t1(1, 1) = 0;
 	t1(1, 2) = -3;
 	
+	Tensor t1_t(make_shape(3, 2));
+	t1_t(0, 0) = -1;
+	t1_t(1, 0) = 1;
+	t1_t(2, 0) = 4;
+	t1_t(0, 1) = -4;
+	t1_t(1, 1) = 0;
+	t1_t(2, 1) = -3;
+	
 	Tensor t2(make_shape(3, 4));
 	t2(0, 0) = 2;
 	t2(0, 1) = 3;
@@ -486,6 +516,20 @@ void test_gemm_subtensor()
 	t2(2, 2) = 9;
 	t2(2, 3) = 10;
 	
+	Tensor t2_t(make_shape(4, 3));
+	t2_t(0, 0) = 2;
+	t2_t(1, 0) = 3;
+	t2_t(2, 0) = -2;
+	t2_t(3, 0) = 1;
+	t2_t(0, 1) = 4;
+	t2_t(1, 1) = 0;
+	t2_t(2, 1) = 5;
+	t2_t(3, 1) = 6;
+	t2_t(0, 2) = 7;
+	t2_t(1, 2) = 8;
+	t2_t(2, 2) = 9;
+	t2_t(3, 2) = 10;
+	
 	Tensor t3(make_shape(2, 4));
 	printf("nono\n");
 	gemm_cpu(&t1, &t2, &t3, CblasNoTrans, CblasNoTrans, 1, 0);
@@ -494,21 +538,21 @@ void test_gemm_subtensor()
 	t3.print();
 	
 	printf("transno\n");
-	gemm_cpu(&t1, &t2, &t3, CblasTrans, CblasNoTrans, 1, 0);
+	gemm_cpu(&t1_t, &t2, &t3, CblasTrans, CblasNoTrans, 1, 0);
 	t3.print();
-	gemm_cpu(&ty, &tx, &t3, CblasTrans, CblasNoTrans, 1, 0);
+	gemm_cpu(&ty_t, &tx, &t3, CblasTrans, CblasNoTrans, 1, 0);
 	t3.print();
 	
 	printf("notrans\n");
-	gemm_cpu(&t1, &t2, &t3, CblasNoTrans, CblasTrans, 1, 0);
+	gemm_cpu(&t1, &t2_t, &t3, CblasNoTrans, CblasTrans, 1, 0);
 	t3.print();
-	gemm_cpu(&ty, &tx, &t3, CblasNoTrans, CblasTrans, 1, 0);
+	gemm_cpu(&ty, &tx_t, &t3, CblasNoTrans, CblasTrans, 1, 0);
 	t3.print();
 	
 	printf("transtrans\n");
-	gemm_cpu(&t1, &t2, &t3, CblasTrans, CblasTrans, 1, 0);
+	gemm_cpu(&t1_t, &t2_t, &t3, CblasTrans, CblasTrans, 1, 0);
 	t3.print();
-	gemm_cpu(&ty, &tx, &t3, CblasTrans, CblasTrans, 1, 0);
+	gemm_cpu(&ty_t, &tx_t, &t3, CblasTrans, CblasTrans, 1, 0);
 	t3.print();
 }
 
@@ -589,6 +633,37 @@ void test_gemm()
 	t3.freeCPU();
 
 	// _getch();
+}
+
+void test_subtensor()
+{
+	Tensor t1(make_shape(10, 10));
+	for (int i = 0; i < 10; i++)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			t1(i, j) = i * 10 + j;
+		}
+	}
+	
+	t1.print();
+	printf("\n");
+	for (uint64_t i = 0; i < t1.mSize; i++)
+	{
+		printf("%f ", t1.at(i));
+	}
+	printf("\n");
+	printf("\n");
+	
+	Tensor t2 = t1.subtensor(make_shape(2,3),make_shape(5,6));
+	
+	t2.print();
+	printf("\n");
+	for (uint64_t i = 0; i < t2.mSize; i++)
+	{
+		printf("%f ", t2.at(i));
+	}
+	printf("\n");
 }
 
 void test_tensor()

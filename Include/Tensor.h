@@ -80,6 +80,9 @@ inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_
 	assert(N == res->cols());
 #endif
 	// printf("%d %d %d %d %d %d %d %d %d\n", m1->mData, m1->mStart, m2->mData, m2->mStart, res->mData, res->mStart, m1->mLD, m2->mLD, res->mLD);
+	#warning remove asserts when fixed
+	assert(m1->mData==m1->mStart && m2->mData==m2->mStart && res->mData == res->mStart);
+	assert(m1->mLD == m1->mAllocShape[1] && m2->mLD == m2->mAllocShape[1] && res->mLD == res->mAllocShape[1]);
 	cblas_sgemm(CblasRowMajor, trans_m1, trans_m2,
 		res->rows(), //M
 		res->cols(), //N

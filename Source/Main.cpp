@@ -117,11 +117,12 @@ int main()
 	//initCL();
 
 	// test_tensor();
+	// test_subtensor();
 	// test_gemm();
-	test_gemm_subtensor();
+	// test_gemm_subtensor();
 	//test_im2col();
 	
-	// test_fc();
+	test_fc();
 	// test_conv();
 
 	//_getch();

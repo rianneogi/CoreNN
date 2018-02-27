@@ -129,8 +129,22 @@ Tensor Board::forward(const std::vector<Tensor>& placeholders)
 	assert(placeholders.size() <= mPlaceholders.size());
 	for (size_t i = 0; i < placeholders.size(); i++)
 	{
-		assert(placeholders[i].mSize==mPlaceholders[i]->mSize);
-		mPlaceholders[i]->mData = placeholders[i].mData;
+		assert(mPlaceholders[i]->mSize==placeholders[i].mSize);
+		// mPlaceholders[i]->mData = placeholders[i].mData;
+		// mPlaceholders[i]->mStart = placeholders[i].mStart;
+		// mPlaceholders[i]->mLD = placeholders[i].mLD;
+		// mPlaceholders[i]->mOffset = placeholders[i].mOffset;
+		// mPlaceholders[i]->mShape = placeholders[i].mShape;
+		// mPlaceholders[i]->mAllocSize = placeholders[i].mAllocSize;
+		// mPlaceholders[i]->mAllocShape = placeholders[i].mAllocShape;
+		// *mPlaceholders[i] = placeholders[i];
+		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
+		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
+		
+		uint64_t x = rand()%placeholders[i].mSize;
+		// printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
+		assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
+		#warning revert this
 	}
 
 	//Forward pass
@@ -266,7 +280,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
 		mNeurons[i]->forward();
-		printf("forward %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Data(0), mBlobs[i+1]->Data(0));
+		// printf("forward %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Data(0), mBlobs[i+1]->Data(0));
 	}
 
 	//Calculate Error
@@ -279,13 +293,13 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	{
 		// printf("backprop %d\n", i);
 		mNeurons[i]->backprop();
-		printf("backprop %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Delta(0), mBlobs[i+1]->Delta(0));
+		// printf("backprop %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Delta(0), mBlobs[i+1]->Delta(0));
 	}
 	
-	for(size_t i = 0;i<mOptimizer->Variables.size();i++)
-	{
-		printf("var %d : %s %f\n", i, mOptimizer->Variables[i]->Name.c_str(), mOptimizer->Variables[i]->Delta(0));
-	}
+	// for(size_t i = 0;i<mOptimizer->Variables.size();i++)
+	// {
+	// 	printf("var %d : %s %f\n", i, mOptimizer->Variables[i]->Name.c_str(), mOptimizer->Variables[i]->Delta(0));
+	// }
 
 	return error;
 }

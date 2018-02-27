@@ -13,6 +13,7 @@ void test_conv();
 void test_gemm();
 void test_gemm_subtensor();
 void test_tensor();
+void test_subtensor();
 void test_im2col();
 void test_diag();
 
