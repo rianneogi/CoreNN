@@ -122,8 +122,8 @@ int main()
 	// test_gemm_subtensor();
 	//test_im2col();
 	
-	test_fc();
-	// test_conv();
+	// test_fc();
+	test_conv();
 
 	//_getch();
 

@@ -122,7 +122,7 @@ Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c) const
 	assert(b < mShape[1]);
 	assert(c < mShape[2]);
 #endif
-	return mStart[(a)*mShape[1]*mShape[2] + (b)*mShape[2] + c];
+	return mStart[(a)*mAllocShape[1]*mAllocShape[2] + (b)*mAllocShape[2] + c];
 }
 
 Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const
@@ -134,7 +134,7 @@ Float& Tensor::operator()(uint64_t a, uint64_t b, uint64_t c, uint64_t d) const
 	assert(c < mShape[2]);
 	assert(d < mShape[3]);
 #endif
-	return mStart[(a)*mShape[1]*mShape[2]*mShape[3] + (b)*mShape[2]*mShape[3] + (c)*mShape[3] + d];
+	return mStart[(a)*mAllocShape[1]*mAllocShape[2]*mAllocShape[3] + (b)*mAllocShape[2]*mAllocShape[3] + (c)*mAllocShape[3] + d];
 }
 
 void Tensor::copyFromTensor(const Tensor& other)
