@@ -360,7 +360,7 @@ void test_conv()
 
 	Initializer* initializer = new RangeInitializer();
 
-	Blob* inputBlob = b.newBlob(make_shape(batch_size, 28, 28, 1));
+	Blob* inputBlob = b.newBlob(make_shape(batch_size, 28* 28* 1));
 	Blob* l1convBlob = b.newBlob(make_shape(batch_size*26*26, 9));
 	Blob* l1fcBlob = b.newBlob(make_shape(batch_size * 26 * 26, 10));
 	Blob* l1tanhBlob = b.newBlob(make_shape(batch_size, 26,26,10)); //reshape in tanh neuron
@@ -372,7 +372,8 @@ void test_conv()
 	Blob* l3tanhBlob = b.newBlob(make_shape(batch_size, 10));
 
 	b.setOptimizer(new AdamOptimizer(0.005));
-
+	
+	b.addNeuron(new ReshapeNeuron(inputBlob, make_shape(batch_size,28,28,1)));
 	b.addNeuron(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));
 	b.addNeuron(new FullyConnectedNeuron(l1convBlob, l1fcBlob, initializer));
 	b.addNeuron(new LeakyReLUNeuron(l1fcBlob, l1tanhBlob, 0.05));

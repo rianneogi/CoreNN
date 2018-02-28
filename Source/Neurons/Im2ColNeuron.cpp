@@ -50,7 +50,8 @@ void Im2ColNeuron::forward()
 					assert(mOutput->Data.mData != 0 && mInput->Data.mData!=0);
 					assert(mOutput->Data.mData==mOutput->Data.mStart);
 					assert(mInput->Data.mData==mInput->Data.mStart);
-					printf("data %d %d \n",mInput->Data.mData,mOutput->Data.mData);
+					#warning remove asserts
+					// printf("data %d %d \n",mInput->Data.mData,mOutput->Data.mData);
 					memcpy(&mOutput->Data(batch*FieldCount + sub_batch, id),
 						&mInput->Data(batch, i, x, 0), FieldWidth * InputDepth * sizeof(Float));
 
