@@ -115,6 +115,9 @@ int main()
 	srand(time(0));
 	printf("\n");
 	//initCL();
+	
+	Clock timer;
+	timer.Start();
 
 	// test_tensor();
 	// test_subtensor();
@@ -125,6 +128,9 @@ int main()
 	// test_fc();
 	test_conv();
 
+	timer.Stop();
+	printf("Total time taken: %d\n", timer.ElapsedMilliseconds());
+	
 	//_getch();
 
 	//cleanupOpenCL();

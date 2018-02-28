@@ -141,9 +141,9 @@ Tensor Board::forward(const std::vector<Tensor>& placeholders)
 		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
 		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
 		
-		uint64_t x = rand()%placeholders[i].mSize;
-		// printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
-		assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
+		// uint64_t x = rand()%placeholders[i].mSize;
+		// // printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
+		// assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
 		#warning revert this
 	}
 
@@ -270,9 +270,9 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
 		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
 		
-		uint64_t x = rand()%placeholders[i].mSize;
-		// printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
-		assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
+		// uint64_t x = rand()%placeholders[i].mSize;
+		// // printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
+		// assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
 		#warning revert this
 	}
 
