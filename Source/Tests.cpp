@@ -424,6 +424,77 @@ void test_conv()
 	// _getch();
 }
 
+void test_autoencoder()
+{
+	Board b;
+	int batch_size = 100;
+	int epochs = 5;
+	double learning_rate = 0.0005;
+
+	Initializer* initializer = new RangeInitializer();
+
+	Blob* inputBlob = b.newBlob(make_shape(batch_size, 28* 28* 1));
+	Blob* l1convBlob = b.newBlob(make_shape(batch_size*26*26, 9));
+	Blob* l1fcBlob = b.newBlob(make_shape(batch_size * 26 * 26, 10));
+	Blob* l1tanhBlob = b.newBlob(make_shape(batch_size, 26,26,10)); //reshape in tanh neuron
+	//Blob* l2inputBlob = b.newBlob(make_shape(batch_size, 10 * 26 * 26));
+	Blob* l2convBlob = b.newBlob(make_shape(batch_size*24*24,10*9));
+	Blob* l2fcBlob = b.newBlob(make_shape(batch_size*24*24, 10));
+	Blob* l2tanhBlob = b.newBlob(make_shape(batch_size, 24*24*10));
+	Blob* l3fcBlob = b.newBlob(make_shape(batch_size, 10));
+	Blob* l3tanhBlob = b.newBlob(make_shape(batch_size, 10));
+
+	b.setOptimizer(new AdamOptimizer(0.005));
+	
+	b.addNeuron(new ReshapeNeuron(inputBlob, make_shape(batch_size,28,28,1)));
+	b.addNeuron(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));
+	b.addNeuron(new FullyConnectedNeuron(l1convBlob, l1fcBlob, initializer));
+	b.addNeuron(new LeakyReLUNeuron(l1fcBlob, l1tanhBlob, 0.05));
+	// b.addNeuron(new ReshapeNeuron(l1tanhBlob, make_shape(batch_size, 10 * 26 * 26)));
+	b.addNeuron(new Im2ColNeuron(l1tanhBlob, l2convBlob, 3, 3));
+	//l1tanhBlob->reshape(make_shape(batch_size, 10 * 26 * 26));
+	b.addNeuron(new FullyConnectedNeuron(l2convBlob, l2fcBlob, initializer));
+	b.addNeuron(new LeakyReLUNeuron(l2fcBlob, l2tanhBlob, 0.05));
+	b.addNeuron(new FullyConnectedNeuron(l2tanhBlob, l3fcBlob, initializer));
+	b.addNeuron(new LeakyReLUNeuron(l3fcBlob, l3tanhBlob, 0.05));
+	b.addErrorFunction(new MeanSquaredError(l3tanhBlob));
+	//l1tanhBlob->reshape(make_shape(batch_size * 26 * 26, 10));
+
+	b.addPlaceholder(&inputBlob->Data);
+	b.addPlaceholder(&b.mErrorFuncs[0]->mTarget);
+
+	Tensor inputs_train = openidx_input(TEST_DATA_PATH + "train-images.idx3-ubyte");
+	Tensor outputs_train = openidx_output(TEST_DATA_PATH + "train-labels.idx1-ubyte", 10);
+	Tensor inputs_test = openidx_input(TEST_DATA_PATH + "t10k-images.idx3-ubyte");
+	Tensor outputs_test = openidx_output(TEST_DATA_PATH + "t10k-labels.idx1-ubyte", 10);
+
+	printf("Setting up\n");
+	b.setUp();
+
+	b.train(inputs_train, outputs_train, epochs, batch_size);
+
+	int acc = 0;
+	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		for (int j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	inputs_train.freemem();
+	inputs_test.freemem();
+	outputs_train.freemem();
+	outputs_test.freemem();
+}
+
 void test_gemm_subtensor()
 {
 	Tensor ten(make_shape(19,19));

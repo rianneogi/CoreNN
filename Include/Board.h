@@ -37,6 +37,7 @@ public:
 
 	//Tensor forward(const Tensor& input);
 	Tensor forward(const std::vector<Tensor>& placeholders);
+	Tensor forward(); //forwards with no placeholder
 	Tensor forward(const Tensor& input1);
 	Tensor forward(const Tensor& input1, const Tensor& input2);
 	Tensor forward(const Tensor& input1, const Tensor& input2, const Tensor& input3);

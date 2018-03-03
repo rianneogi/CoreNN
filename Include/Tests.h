@@ -8,6 +8,7 @@ extern cl_kernel gKernelMatSub;
 //Runs
 void test_fc();
 void test_conv();
+void test_autoencoder();
 
 //CPU
 void test_gemm();

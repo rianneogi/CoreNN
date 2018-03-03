@@ -1,5 +1,5 @@
 -std=c++14
 -IInclude
--I/home/rian/Documents/Code/Libraries/OpenBLAS/include
+-I/home/rian/Code/Libraries/OpenBLAS/include
 -I/opt/AMDAPPSDK-3.0/include
--I/home/rian/Documents/Code/Libraries/clBLAS-2.12.0-Linux-x64/include
+-I/home/rian/Code/Libraries/clBLAS-2.12.0-Linux-x64/include

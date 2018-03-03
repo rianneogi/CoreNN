@@ -110,30 +110,31 @@ void cleanupOpenCL()
 	clReleaseContext(gCLContext);
 }
 
-int main()
-{
-	srand(time(0));
-	printf("\n");
-	//initCL();
-	
-	Clock timer;
-	timer.Start();
-
-	// test_tensor();
-	// test_subtensor();
-	// test_gemm();
-	// test_gemm_subtensor();
-	//test_im2col();
-	
-	// test_fc();
-	test_conv();
-
-	timer.Stop();
-	printf("Total time taken: %d\n", timer.ElapsedMilliseconds());
-	
-	//_getch();
-
-	//cleanupOpenCL();
-
-	return 0;
-}
+// int main()
+// {
+// 	srand(time(0));
+// 	printf("\n");
+// 	initCL();
+// 
+// 	Clock timer;
+// 	timer.Start();
+// 
+// 	// test_tensor();
+// 	// test_subtensor();
+// 	// test_gemm();
+// 	// test_gemm_subtensor();
+// 	// test_im2col();
+// 
+// 	// test_fc();
+// 	// test_conv();
+// 	test_autoencoder();
+// 
+// 	timer.Stop();
+// 	printf("\nTotal time taken: %d\n", timer.ElapsedMilliseconds());
+// 
+// 	//_getch();
+// 
+// 	//cleanupOpenCL();
+// 
+// 	return 0;
+// }

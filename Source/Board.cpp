@@ -155,6 +155,12 @@ Tensor Board::forward(const std::vector<Tensor>& placeholders)
 	return mBlobs[mBlobs.size()-1]->Data;
 }
 
+Tensor Board::forward()
+{
+	std::vector<Tensor> v;
+	return forward(v);
+}
+
 Tensor Board::forward(const Tensor& input1)
 {
 	std::vector<Tensor> v;
