@@ -820,97 +820,97 @@ void test_im2col()
 	l1convBlob->Data.print();
 }
 
-//void test_gemm_gpu()
-//{
-//	Tensor t1(make_shape(2, 3));
-//	t1(0, 0) = -1;
-//	t1(0, 1) = 1;
-//	t1(0, 2) = 4;
-//	t1(1, 0) = -4;
-//	t1(1, 1) = 0;
-//	t1(1, 2) = -3;
-//	t1.print();
-//
-//	Tensor t1_t(make_shape(3, 2));
-//	t1_t(0, 0) = -1;
-//	t1_t(1, 0) = 1;
-//	t1_t(2, 0) = 4;
-//	t1_t(0, 1) = -4;
-//	t1_t(1, 1) = 0;
-//	t1_t(2, 1) = -3;
-//	t1_t.print();
-//
-//	Tensor t2(make_shape(3, 4));
-//	t2(0, 0) = 2;
-//	t2(0, 1) = 3;
-//	t2(0, 2) = -2;
-//	t2(0, 3) = 1;
-//	t2(1, 0) = 4;
-//	t2(1, 1) = 0;
-//	t2(1, 2) = 5;
-//	t2(1, 3) = 6;
-//	t2(2, 0) = 7;
-//	t2(2, 1) = 8;
-//	t2(2, 2) = 9;
-//	t2(2, 3) = 10;
-//	t2.print();
-//
-//	Tensor t2_t(make_shape(4, 3));
-//	t2_t(0, 0) = 2;
-//	t2_t(1, 0) = 3;
-//	t2_t(2, 0) = -2;
-//	t2_t(3, 0) = 1;
-//	t2_t(0, 1) = 4;
-//	t2_t(1, 1) = 0;
-//	t2_t(2, 1) = 5;
-//	t2_t(3, 1) = 6;
-//	t2_t(0, 2) = 7;
-//	t2_t(1, 2) = 8;
-//	t2_t(2, 2) = 9;
-//	t2_t(3, 2) = 10;
-//	t2_t.print();
-//
-//	Tensor t3(make_shape(2, 4));
-//	t3.setzero();
-//
-//	/*t1.allocateGPU();
-//	t1_t.allocateGPU();
-//	t2.allocateGPU();
-//	t2_t.allocateGPU();
-//	t3.allocateGPU();*/
-//
-//	t1.copyToGPU();
-//	t2.copyToGPU();
-//	t1_t.copyToGPU();
-//	t2_t.copyToGPU();
-//	t3.copyToGPU();
-//
-//	//Mat Mul
-//	/*clblasDgemm(clblasRowMajor, clblasNoTrans, clblasNoTrans, t1.cols(), t2.rows(),
-//	t1.rows(), 1, t1.mData, t1.rows(), t2.mData, t2.rows(), 0, t3.mData, t3.rows())*/
-//	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, t1.rows(), t2.cols(),
-//	//	t1.cols(), 1, t1.mData, t1.cols(), t2.mData, t2.cols(), 0, t3.mData, t3.cols());
-//	gemm_gpu(&t1, &t2, &t3, clblasNoTrans, clblasNoTrans, 1, 0);
-//	t3.copyToCPU();
-//	t3.print();
-//	gemm_gpu(&t1_t, &t2_t, &t3, clblasTrans, clblasTrans, 1, 0);
-//	t3.copyToCPU();
-//	t3.print();
-//	gemm_gpu(&t1, &t2_t, &t3, clblasNoTrans, clblasTrans, 1, 0);
-//	t3.copyToCPU();
-//	t3.print();
-//	gemm_gpu(&t1_t, &t2, &t3, clblasTrans, clblasNoTrans, 1, 0);
-//	t3.copyToCPU();
-//	t3.print();
-//
-//	t1.freemem();
-//	t2.freemem();
-//	t1_t.freemem();
-//	t2_t.freemem();
-//	t3.freemem();
-//
-//	_getch();
-//}
+// void test_gemm_gpu()
+// {
+// 	Tensor t1(make_shape(2, 3));
+// 	t1(0, 0) = -1;
+// 	t1(0, 1) = 1;
+// 	t1(0, 2) = 4;
+// 	t1(1, 0) = -4;
+// 	t1(1, 1) = 0;
+// 	t1(1, 2) = -3;
+// 	t1.print();
+// 
+// 	Tensor t1_t(make_shape(3, 2));
+// 	t1_t(0, 0) = -1;
+// 	t1_t(1, 0) = 1;
+// 	t1_t(2, 0) = 4;
+// 	t1_t(0, 1) = -4;
+// 	t1_t(1, 1) = 0;
+// 	t1_t(2, 1) = -3;
+// 	t1_t.print();
+// 
+// 	Tensor t2(make_shape(3, 4));
+// 	t2(0, 0) = 2;
+// 	t2(0, 1) = 3;
+// 	t2(0, 2) = -2;
+// 	t2(0, 3) = 1;
+// 	t2(1, 0) = 4;
+// 	t2(1, 1) = 0;
+// 	t2(1, 2) = 5;
+// 	t2(1, 3) = 6;
+// 	t2(2, 0) = 7;
+// 	t2(2, 1) = 8;
+// 	t2(2, 2) = 9;
+// 	t2(2, 3) = 10;
+// 	t2.print();
+// 
+// 	Tensor t2_t(make_shape(4, 3));
+// 	t2_t(0, 0) = 2;
+// 	t2_t(1, 0) = 3;
+// 	t2_t(2, 0) = -2;
+// 	t2_t(3, 0) = 1;
+// 	t2_t(0, 1) = 4;
+// 	t2_t(1, 1) = 0;
+// 	t2_t(2, 1) = 5;
+// 	t2_t(3, 1) = 6;
+// 	t2_t(0, 2) = 7;
+// 	t2_t(1, 2) = 8;
+// 	t2_t(2, 2) = 9;
+// 	t2_t(3, 2) = 10;
+// 	t2_t.print();
+// 
+// 	Tensor t3(make_shape(2, 4));
+// 	t3.setzero();
+// 
+// 	/*t1.allocateGPU();
+// 	t1_t.allocateGPU();
+// 	t2.allocateGPU();
+// 	t2_t.allocateGPU();
+// 	t3.allocateGPU();*/
+// 
+// 	t1.copyToGPU();
+// 	t2.copyToGPU();
+// 	t1_t.copyToGPU();
+// 	t2_t.copyToGPU();
+// 	t3.copyToGPU();
+// 
+// 	//Mat Mul
+// 	/*clblasDgemm(clblasRowMajor, clblasNoTrans, clblasNoTrans, t1.cols(), t2.rows(),
+// 	t1.rows(), 1, t1.mData, t1.rows(), t2.mData, t2.rows(), 0, t3.mData, t3.rows())*/
+// 	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, t1.rows(), t2.cols(),
+// 	//	t1.cols(), 1, t1.mData, t1.cols(), t2.mData, t2.cols(), 0, t3.mData, t3.cols());
+// 	gemm_gpu(&t1, &t2, &t3, clblasNoTrans, clblasNoTrans, 1, 0);
+// 	t3.copyToCPU();
+// 	t3.print();
+// 	gemm_gpu(&t1_t, &t2_t, &t3, clblasTrans, clblasTrans, 1, 0);
+// 	t3.copyToCPU();
+// 	t3.print();
+// 	gemm_gpu(&t1, &t2_t, &t3, clblasNoTrans, clblasTrans, 1, 0);
+// 	t3.copyToCPU();
+// 	t3.print();
+// 	gemm_gpu(&t1_t, &t2, &t3, clblasTrans, clblasNoTrans, 1, 0);
+// 	t3.copyToCPU();
+// 	t3.print();
+// 
+// 	t1.freemem();
+// 	t2.freemem();
+// 	t1_t.freemem();
+// 	t2_t.freemem();
+// 	t3.freemem();
+// 
+// 	// _getch();
+// }
 
 void test_kernel()
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Neuron.h"
+#include "Neuron.h"
 
 //Converts a 4D Tensor into a 2D Tensor for matrix multiplication
 //Input: BatchSize x InputHeight x InputWidth x InputDepth

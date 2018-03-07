@@ -146,7 +146,6 @@ Tensor Board::forward(const std::vector<Tensor>& placeholders)
 		// assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
 		#warning revert this
 	}
-
 	//Forward pass
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
