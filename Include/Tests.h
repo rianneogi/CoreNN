@@ -21,3 +21,6 @@ void test_diag();
 //GPU
 // void test_gemm_gpu();
 void test_kernel();
+
+//MKL
+void test_mkl();

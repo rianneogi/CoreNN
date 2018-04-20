@@ -17,4 +17,6 @@
 #include <clBLAS.h>
 #include <cblas.h>
 
+#include <mkldnn.hpp>
+
 typedef float Float;

@@ -962,7 +962,7 @@ void test_diag()
 	t.setzero();
 
 	b.addNeuron(new DiagNeuron(inputBlob, l1convBlob, t));
-
+	
 	Tensor input(make_shape(batch_size, height, width, depth));
 	for (int i = 0; i < batch_size; i++)
 	{
@@ -984,4 +984,87 @@ void test_diag()
 	printf("\n %f %f %f \n", 2*input.sum(), l1convBlob->Data.sum(), 2 * input.sum() - l1convBlob->Data.sum());
 
 	// _getch();
+}
+
+void test_mkl()
+{
+	using namespace mkldnn;
+	auto cpu_engine = engine(mkldnn::engine::cpu, 0);
+	
+	std::vector<mkldnn::primitive> net;
+	std::vector<mkldnn::primitive> net_weights;
+	
+	const int batch = 1;
+	
+	mkldnn::memory::dims conv_src_tz = {batch, 1, 28, 28};
+	mkldnn::memory::dims conv_weights_tz = {96, 3, 11, 11};
+	mkldnn::memory::dims conv_bias_tz = {96};
+	mkldnn::memory::dims conv_dst_tz = {batch, 96, 55, 55};
+	mkldnn::memory::dims conv_strides = {1, 1};
+	auto conv_padding = {0, 0};
+
+	std::vector<float> user_src(batch * 1*28*28);
+    std::vector<float> user_dst(batch * 10);
+	
+	memory::dims fc6_src_tz = { batch, 1, 18, 18 };
+    memory::dims fc6_weights_tz = { batch, 256, 6, 6 };
+    memory::dims fc6_bias_tz = { 4096 };
+    memory::dims fc6_dst_tz = { batch, 4096 };
+
+    std::vector<float> fc6_weights(std::accumulate(fc6_weights_tz.begin(),
+            fc6_weights_tz.end(), 1, std::multiplies<uint32_t>()));
+    std::vector<float> fc6_bias(std::accumulate(fc6_bias_tz.begin(),
+            fc6_bias_tz.end(), 1, std::multiplies<uint32_t>()));
+
+    /* create memory for user data */
+    auto fc6_user_weights_memory
+            = memory({ { { fc6_weights_tz }, memory::data_type::f32,
+                               memory::format::oihw },
+                             cpu_engine },
+                    fc6_weights.data());
+
+    auto fc6_user_bias_memory
+            = memory({ { { fc6_bias_tz }, memory::data_type::f32,
+                               memory::format::x },
+                             cpu_engine },
+                    fc6_bias.data());
+
+    /* create memory descriptors for convolution data w/ no specified format
+     */
+    auto fc6_src_md = memory::desc(
+            { fc6_src_tz }, memory::data_type::f32, memory::format::any);
+    auto fc6_bias_md = memory::desc(
+            { fc6_bias_tz }, memory::data_type::f32, memory::format::any);
+    auto fc6_weights_md = memory::desc({ fc6_weights_tz },
+            memory::data_type::f32, memory::format::any);
+    auto fc6_dst_md = memory::desc(
+            { fc6_dst_tz }, memory::data_type::f32, memory::format::any);
+
+    /* create a inner_product */
+    auto fc6_desc
+            = inner_product_forward::desc(prop_kind::forward_inference,
+                    fc6_src_md, fc6_weights_md, fc6_bias_md, fc6_dst_md);
+    auto fc6_prim_desc
+            = inner_product_forward::primitive_desc(fc6_desc, cpu_engine);
+
+    // auto fc6_src_memory = pool5_dst_memory;
+    // if (memory::primitive_desc(fc6_prim_desc.src_primitive_desc())
+    //         != fc6_src_memory.get_primitive_desc()) {
+    //     fc6_src_memory = memory(fc6_prim_desc.src_primitive_desc());
+    //     net.push_back(reorder(pool5_dst_memory, fc6_src_memory));
+    // }
+	// 
+    // auto fc6_weights_memory = fc6_user_weights_memory;
+    // if (memory::primitive_desc(fc6_prim_desc.weights_primitive_desc())
+    //         != fc6_user_weights_memory.get_primitive_desc()) {
+    //     fc6_weights_memory = memory(fc6_prim_desc.weights_primitive_desc());
+    //     net_weights.push_back(
+    //             reorder(fc6_user_weights_memory, fc6_weights_memory));
+    // }
+	// 
+    // auto fc6_dst_memory = memory(fc6_prim_desc.dst_primitive_desc());
+	// 
+    // /* create convolution primitive and add it to net */
+    // net.push_back(inner_product_forward(fc6_prim_desc, fc6_src_memory,
+    //         fc6_weights_memory, fc6_user_bias_memory, fc6_dst_memory));
 }

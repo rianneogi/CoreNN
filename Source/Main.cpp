@@ -128,7 +128,7 @@ int main()
 	// test_fc();
 	// test_conv();
 	// test_autoencoder();
-	
+
 	// test_gemm_gpu();
 
 	timer.Stop();
