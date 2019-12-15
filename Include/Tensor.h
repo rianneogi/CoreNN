@@ -2,8 +2,8 @@
 
 #include "TensorShape.h"
 
-extern cl_context gCLContext;
-extern cl_command_queue gCLQueue;
+// extern cl_context gCLContext;
+// extern cl_command_queue gCLQueue;
 
 class Tensor
 {
@@ -11,7 +11,7 @@ public:
 	TensorShape mShape;
 	uint64_t mSize;
 	Float* mData;
-	cl_mem mMemory;
+	// cl_mem mMemory;
 	
 	TensorShape mOffset;
 	Float* mStart;

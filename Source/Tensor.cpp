@@ -2,7 +2,7 @@
 
 #define USE_MALLOC
 
-Tensor::Tensor() : mData(NULL), mSize(0), mMemory(NULL), mAllocSize(0), mLD(0), mStart(NULL)
+Tensor::Tensor() : mData(NULL), mSize(0), mAllocSize(0), mLD(0), mStart(NULL)
 {
 }
 
@@ -10,7 +10,7 @@ Tensor::Tensor() : mData(NULL), mSize(0), mMemory(NULL), mAllocSize(0), mLD(0), 
 //{
 //}
 
-Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1), mMemory(NULL), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size() - 1]), mStart(NULL)
+Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size() - 1]), mStart(NULL)
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
 	for (unsigned int x : mShape)
@@ -26,7 +26,7 @@ Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1),
 #endif
 }
 
-Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
+Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
 	for (unsigned int x : mShape)
@@ -48,7 +48,7 @@ Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shap
 // }
 
 Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape) : mData(data), mAllocShape(shape), mSize(1), 
-	mMemory(NULL), mShape(subshape), mOffset(offset), mAllocSize(1), mLD(mAllocShape[mAllocShape.size()-1])
+	mShape(subshape), mOffset(offset), mAllocSize(1), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(subshape.size()==shape.size());
 	assert(offset.size()==shape.size());
@@ -191,16 +191,16 @@ void Tensor::allocateCPU()
 
 void Tensor::allocateGPU()
 {
-	if (mMemory != NULL)
-	{
-		freeGPU();
-	}
-	cl_int err;
-	mMemory = clCreateBuffer(gCLContext, CL_MEM_READ_WRITE, mSize * sizeof(cl_float), NULL, &err);
-	if (err != CL_SUCCESS)
-	{
-		printf("ERROR: allocating tensor GPU: %d\n", err);
-	}
+	// if (mMemory != NULL)
+	// {
+	// 	freeGPU();
+	// }
+	// cl_int err;
+	// mMemory = clCreateBuffer(gCLContext, CL_MEM_READ_WRITE, mSize * sizeof(cl_float), NULL, &err);
+	// if (err != CL_SUCCESS)
+	// {
+	// 	printf("ERROR: allocating tensor GPU: %d\n", err);
+	// }
 }
 
 void Tensor::freemem()
@@ -228,50 +228,53 @@ void Tensor::freeCPU()
 
 void Tensor::freeGPU()
 {
-	if (mMemory != NULL)
-	{
-		clReleaseMemObject(mMemory);
-		mMemory = NULL;
-	}
+	// if (mMemory != NULL)
+	// {
+	// 	clReleaseMemObject(mMemory);
+	// 	mMemory = NULL;
+	// }
 }
 
 
 void Tensor::copyToGPU()
 {
-	if (mMemory != NULL && mData != NULL)
-	{
-		cl_int err = clEnqueueWriteBuffer(gCLQueue, mMemory, CL_TRUE, 0, mSize * sizeof(cl_float), mData, 0, NULL, NULL);
-		if (err != CL_SUCCESS)
-		{
-			printf("ERROR: copytoGPU: %d\n", err);
-		}
-	}
-	/*cl_int err = clblasWriteMatrix(clblasRowMajor, mSize * sizeof(cl_float), mSize * sizeof(cl_float), sizeof(cl_float),
-	mData, 0, cols(), mMemory, 0, cols(),
-	gCLQueue, 1, NULL);
-	if (err != CL_SUCCESS)
-	{
-	printf("ERROR: copytoGPU: %d\n", err);
-	}*/
+	// if (mMemory != NULL && mData != NULL)
+	// {
+	// 	cl_int err = clEnqueueWriteBuffer(gCLQueue, mMemory, CL_TRUE, 0, mSize * sizeof(cl_float), mData, 0, NULL, NULL);
+	// 	if (err != CL_SUCCESS)
+	// 	{
+	// 		printf("ERROR: copytoGPU: %d\n", err);
+	// 	}
+	// }
+
+
+
+	// /*cl_int err = clblasWriteMatrix(clblasRowMajor, mSize * sizeof(cl_float), mSize * sizeof(cl_float), sizeof(cl_float),
+	// mData, 0, cols(), mMemory, 0, cols(),
+	// gCLQueue, 1, NULL);
+	// if (err != CL_SUCCESS)
+	// {
+	// printf("ERROR: copytoGPU: %d\n", err);
+	// }*/
 }
 
 void Tensor::copyToCPU()
 {
-	if (mMemory != NULL && mData != NULL)
-	{
-		cl_int err = clEnqueueReadBuffer(gCLQueue, mMemory, CL_TRUE, 0, mSize * sizeof(cl_float), mData, 0, NULL, NULL);
-		if (err != CL_SUCCESS)
-		{
-			printf("ERROR: copytoCPU: %d\n", err);
-		}
-	}
-	/*cl_int err = clblasReadMatrix(clblasRowMajor, mSize * sizeof(cl_float), mSize * sizeof(cl_float), sizeof(cl_float),
-	mMemory, 0, cols(), mData, 0, cols(),
-	gCLQueue, 1, NULL);
-	if (err != CL_SUCCESS)
-	{
-	printf("ERROR: copytoGPU: %d\n", err);
-	}*/
+	// if (mMemory != NULL && mData != NULL)
+	// {
+	// 	cl_int err = clEnqueueReadBuffer(gCLQueue, mMemory, CL_TRUE, 0, mSize * sizeof(cl_float), mData, 0, NULL, NULL);
+	// 	if (err != CL_SUCCESS)
+	// 	{
+	// 		printf("ERROR: copytoCPU: %d\n", err);
+	// 	}
+	// }
+	// /*cl_int err = clblasReadMatrix(clblasRowMajor, mSize * sizeof(cl_float), mSize * sizeof(cl_float), sizeof(cl_float),
+	// mMemory, 0, cols(), mData, 0, cols(),
+	// gCLQueue, 1, NULL);
+	// if (err != CL_SUCCESS)
+	// {
+	// printf("ERROR: copytoGPU: %d\n", err);
+	// }*/
 }
 
 void Tensor::setzero()

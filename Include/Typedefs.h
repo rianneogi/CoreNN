@@ -1,7 +1,7 @@
 #pragma once
 
 //#define NN_DEBUG
-//#define USE_GPU
+// #define USE_GPU
 
 #undef NDEBUG
 #include "assert.h"
@@ -14,9 +14,9 @@
 #include "time.h"
 #include <fstream>
 
-#include <clBLAS.h>
+// #include <clBLAS.h>
 #include <cblas.h>
 
-#include <mkldnn.hpp>
+// #include <mkldnn.hpp>
 
 typedef float Float;
