@@ -15,6 +15,7 @@ public:
 	uint64_t BatchSize;
 	Blob* Weights;
 	Blob* Biases;
+	// Blob* BiasesStacked;
 	/*Tensor WeightsDelta;
 	Tensor BiasesDelta;*/
 	Tensor Ones;

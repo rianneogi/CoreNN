@@ -55,6 +55,7 @@ bool FullyConnectedNeuron::init()
 	assert(mOutput->Data.mShape.size() == 2);
 	Weights = new Blob(make_shape(mInput->Data.cols(), mOutput->Data.cols()), Name + "Weights");
 	Biases = new Blob(make_shape(1, mOutput->Data.cols()), Name + "Bias");
+	// BiasesStacked = new Blob(mOutput->Data.mShape, Name+"BiasStacked");
 	for (uint64_t i = 0; i < Weights->Data.cols(); i++)
 	{
 		Biases->Data(i) = mInitializer->get_value(i);
@@ -62,10 +63,12 @@ bool FullyConnectedNeuron::init()
 		for (uint64_t j = 0; j < Weights->Data.rows(); j++)
 		{
 			Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.rows());
+			// BiasesStacked->Data(j, i) = Biases->Data(i);
 			// printf("wt %d %d %f\n", j, i, Weights->Data(j,i));
 		}
 	}
 	Biases->copyToGPU();
+	// BiasesStacked->copyToGPU();
 	Weights->copyToGPU();
 	InputSize = Weights->Data.rows();
 	OutputSize = Weights->Data.cols();
@@ -83,11 +86,20 @@ bool FullyConnectedNeuron::init()
 
 void FullyConnectedNeuron::forward()
 {
+	// printf("forward\n");
 #ifdef USE_GPU
-	gemm_gpu(&mInput->Data, &Weights->Data, &mOutput->Data, clblasNoTrans, clblasNoTrans, 1, 0);
+	//Multiply with weights
+	gemm_gpu(&mInput->Data, &Weights->Data, &mOutput->Data, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
+	// printf("done\n");
+	//Add biases to every row
+	for (unsigned int i = 0; i < mInput->Data.rows();i++)
+	{
+		// Float *f = new float(1.0f);
+		Tensor tmp = mOutput->Data.cut(i,1);
+		saxpy_gpu(&Biases->Data, &tmp, 1.0f, 1, 1);
+	}
 #else
 	gemm_cpu(&mInput->Data, &Weights->Data, &mOutput->Data, CblasNoTrans, CblasNoTrans, 1, 0);
-#endif
 	for (unsigned int i = 0; i < mInput->Data.rows(); i++)
 	{
 		for (unsigned int j = 0; j < Biases->Data.mSize; j++)
@@ -95,17 +107,20 @@ void FullyConnectedNeuron::forward()
 			mOutput->Data(i, j) += Biases->Data(j);
 		}
 	}
+#endif
 }
-
+ 
 void FullyConnectedNeuron::backprop()
 {
 #ifdef USE_GPU
 	//Weights
-	gemm_gpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, clblasNoTrans, clblasTrans, 1, 1);
-	gemm_gpu(&mInput->Data, &mOutput->Delta, &Weights->Delta, clblasTrans, clblasNoTrans, 1, 0);
+	// printf("back1\n");
+	gemm_gpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CUBLAS_OP_N, CUBLAS_OP_T, 1, 1);
+	// printf("back2\n");
+	gemm_gpu(&mInput->Data, &mOutput->Delta, &Weights->Delta, CUBLAS_OP_T, CUBLAS_OP_N, 1, 0);
 
 	//Biases
-	gemm_gpu(&Ones, &mOutput->Delta, &Biases->Delta, clblasNoTrans, clblasNoTrans, 1, 0);
+	gemm_gpu(&Ones, &mOutput->Delta, &Biases->Delta, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
 #else
 	//Weights
 	gemm_cpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CblasNoTrans, CblasTrans, 1, 1);

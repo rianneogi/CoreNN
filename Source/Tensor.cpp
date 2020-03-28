@@ -2,7 +2,7 @@
 
 #define USE_MALLOC
 
-Tensor::Tensor() : mData(NULL), mSize(0), mAllocSize(0), mLD(0), mStart(NULL)
+Tensor::Tensor() : mData(NULL), mDataGPU(NULL), mSize(0), mAllocSize(0), mLD(0), mStart(NULL)
 {
 }
 
@@ -10,7 +10,7 @@ Tensor::Tensor() : mData(NULL), mSize(0), mAllocSize(0), mLD(0), mStart(NULL)
 //{
 //}
 
-Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size() - 1]), mStart(NULL)
+Tensor::Tensor(const TensorShape& shape) : mData(NULL), mDataGPU(NULL), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size() - 1]), mStart(NULL)
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
 	for (unsigned int x : mShape)
@@ -26,7 +26,7 @@ Tensor::Tensor(const TensorShape& shape) : mData(NULL), mShape(shape), mSize(1),
 #endif
 }
 
-Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
+Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mDataGPU(NULL), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
 	for (unsigned int x : mShape)
@@ -47,7 +47,7 @@ Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mShape(shap
 // 	}
 // }
 
-Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape) : mData(data), mAllocShape(shape), mSize(1), 
+Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape) : mData(data), mDataGPU(NULL), mAllocShape(shape), mSize(1), 
 	mShape(subshape), mOffset(offset), mAllocSize(1), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(subshape.size()==shape.size());
@@ -189,20 +189,6 @@ void Tensor::allocateCPU()
 #endif
 }
 
-void Tensor::allocateGPU()
-{
-	// if (mMemory != NULL)
-	// {
-	// 	freeGPU();
-	// }
-	// cl_int err;
-	// mMemory = clCreateBuffer(gCLContext, CL_MEM_READ_WRITE, mSize * sizeof(cl_float), NULL, &err);
-	// if (err != CL_SUCCESS)
-	// {
-	// 	printf("ERROR: allocating tensor GPU: %d\n", err);
-	// }
-}
-
 void Tensor::freemem()
 {
 	freeCPU();
@@ -224,57 +210,6 @@ void Tensor::freeCPU()
 		mStart = NULL;
 #endif
 	}
-}
-
-void Tensor::freeGPU()
-{
-	// if (mMemory != NULL)
-	// {
-	// 	clReleaseMemObject(mMemory);
-	// 	mMemory = NULL;
-	// }
-}
-
-
-void Tensor::copyToGPU()
-{
-	// if (mMemory != NULL && mData != NULL)
-	// {
-	// 	cl_int err = clEnqueueWriteBuffer(gCLQueue, mMemory, CL_TRUE, 0, mSize * sizeof(cl_float), mData, 0, NULL, NULL);
-	// 	if (err != CL_SUCCESS)
-	// 	{
-	// 		printf("ERROR: copytoGPU: %d\n", err);
-	// 	}
-	// }
-
-
-
-	// /*cl_int err = clblasWriteMatrix(clblasRowMajor, mSize * sizeof(cl_float), mSize * sizeof(cl_float), sizeof(cl_float),
-	// mData, 0, cols(), mMemory, 0, cols(),
-	// gCLQueue, 1, NULL);
-	// if (err != CL_SUCCESS)
-	// {
-	// printf("ERROR: copytoGPU: %d\n", err);
-	// }*/
-}
-
-void Tensor::copyToCPU()
-{
-	// if (mMemory != NULL && mData != NULL)
-	// {
-	// 	cl_int err = clEnqueueReadBuffer(gCLQueue, mMemory, CL_TRUE, 0, mSize * sizeof(cl_float), mData, 0, NULL, NULL);
-	// 	if (err != CL_SUCCESS)
-	// 	{
-	// 		printf("ERROR: copytoCPU: %d\n", err);
-	// 	}
-	// }
-	// /*cl_int err = clblasReadMatrix(clblasRowMajor, mSize * sizeof(cl_float), mSize * sizeof(cl_float), sizeof(cl_float),
-	// mMemory, 0, cols(), mData, 0, cols(),
-	// gCLQueue, 1, NULL);
-	// if (err != CL_SUCCESS)
-	// {
-	// printf("ERROR: copytoGPU: %d\n", err);
-	// }*/
 }
 
 void Tensor::setzero()
@@ -384,7 +319,7 @@ Tensor Tensor::cut2(uint64_t begin, uint64_t len) const
 Tensor Tensor::submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const
 {
 #ifdef NN_DEBUG
-	assert(mShape.size() == 2);
+	assert(mShape.size() == 2 && "Not a matrix");
 	assert(begin_row + rows <= mShape[0]);
 	assert(begin_col + cols <= mShape[1]);
 #endif
@@ -398,26 +333,26 @@ Tensor Tensor::submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, 
 uint64_t Tensor::rows() const
 {
 #ifdef NN_DEBUG
-	assert(mShape.size() >= 1);
-#endif
-	return mShape[0];
-}
-
-uint64_t Tensor::cols() const
-{
-#ifdef NN_DEBUG
 	assert(mShape.size() >= 2);
 #endif
 	return mShape[1];
 }
 
+uint64_t Tensor::cols() const
+{
+#ifdef NN_DEBUG
+	assert(mShape.size() >= 1);
+#endif
+	return mShape[0];
+}
+
 void Tensor::print() const
 {
-	for (uint64_t i = 0; i < mShape[0]; i++)
+	for (uint64_t i = 0; i < mShape[1]; i++)
 	{
-		for (uint64_t j = 0; j < mShape[1]; j++)
+		for (uint64_t j = 0; j < mShape[0]; j++)
 		{
-			printf("%f ", operator()(i, j));
+			printf("%f ", operator()(j, i));
 		}
 		printf("\n");
 	}

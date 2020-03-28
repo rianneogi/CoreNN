@@ -19,6 +19,8 @@ public:
 	uint64_t mAllocSize;
 	uint64_t mLD; //Size of leading dimension
 
+	float* mDataGPU;
+
 	Tensor();
 	//Tensor(const Tensor& other);
 	Tensor(const TensorShape& shape); //initialize tensor allocated with given shape
@@ -64,9 +66,12 @@ public:
 	uint64_t rows() const;
 	uint64_t cols() const;
 
-	void print() const;
+	void print() const; //prints in matrix form assuming raw data is column major
+	// __global__  void printGPU() const;
 	void print_raw() const;
 };
+
+__global__ void printGPU(int m,int n,int ld,float* data); //prints GPU data as an mxn matrix, assumes column major
 
 inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_m1, CBLAS_TRANSPOSE trans_m2, Float alpha, Float beta)
 {
@@ -94,7 +99,40 @@ inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_
 		res->mStart, res->mLD);
 }
 
+inline void gemm_gpu(Tensor* m1, Tensor* m2, Tensor* res, cublasOperation_t trans_m1, cublasOperation_t trans_m2, Float alpha, Float beta)
+{
+#ifdef NN_DEBUG
+	uint64_t M = trans_m1 == CUBLAS_OP_N ? m1->rows() : m1->cols();
+	uint64_t N = trans_m2 == CUBLAS_OP_N ? m2->cols() : m2->rows();
+	uint64_t K = trans_m1 == CUBLAS_OP_N ? m1->cols() : m1->rows();
+	uint64_t L = trans_m2 == CUBLAS_OP_N ? m2->rows() : m2->cols();
+	assert(K == L);
+	assert(M == res->rows());
+	assert(N == res->cols());
+#endif
+	// #warning todo: test	
+	auto err = cublasSgemm_v2(gCuHandle, trans_m1, trans_m2,
+				   res->rows(),										  //M
+				   res->cols(),										  //N
+				   trans_m1 == CUBLAS_OP_N ? m1->cols() : m1->rows(), //K
+				   &alpha,
+				   m1->mDataGPU, m1->mLD,
+				   m2->mDataGPU, m2->mLD,
+				   &beta,
+				   res->mDataGPU, res->mLD);
+	if(err!=CUBLAS_STATUS_SUCCESS)
+	{
+		printf("ERROR during sgemm %d\n", err);
+	}
+	// printf("%d\n", err);
+}
+
 inline void add_vectors(Tensor* src, Tensor* dest, Float alpha) //test this
 {
 	cblas_saxpy(src->mSize, alpha, src->mData, 1, dest->mData, 1);
+}
+
+inline void saxpy_gpu(Tensor* src, Tensor* dest, Float alpha, int xinc, int yinc) //test this
+{
+	cublasSaxpy_v2(gCuHandle,src->mSize, &alpha, src->mData, xinc, dest->mData, yinc);
 }

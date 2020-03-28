@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NNInclude.h"
+#include "CudaTests.h"
 
 // extern cl_kernel gKernelMatAdd;
 // extern cl_kernel gKernelMatSub;

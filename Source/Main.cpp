@@ -1,5 +1,5 @@
 #include "Tests.h"
-#include "cudaTests.h"
+// #include "CudaTests.h"
 
 // #define M 6
 // #define N 5
@@ -179,7 +179,8 @@
 int main()
 {
 	srand(time(0));
-	// printf("\n");
+	initCublas();
+	printf("Cublas initialized\n");
 	// initCL();
 
 	Clock timer;
@@ -191,7 +192,9 @@ int main()
 	// test_gemm_subtensor();
 	// test_im2col();
 
-	cublas_matmul();
+	test_cugemm();
+	// test_fc();
+	// cublas_matmul();
 	// test_conv();
 	// test_autoencoder();
 
@@ -205,6 +208,7 @@ int main()
 	//_getch();
 
 	//cleanupOpenCL();
+	cleanupCublas();
 
 	return 0;
 }
