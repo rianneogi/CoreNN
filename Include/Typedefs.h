@@ -15,6 +15,9 @@
 #include <fstream>
 
 // #include <clBLAS.h>
+#include <cuda_runtime.h>
+#include <cublas.h>
+#include <cublas_v2.h>
 #include <cblas.h>
 
 // #include <mkldnn.hpp>
