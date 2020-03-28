@@ -14,3 +14,5 @@ public:
 	void backprop();
 };
 
+float mse_calculate(int size, float *target, float *output_data, float *output_delta);
+

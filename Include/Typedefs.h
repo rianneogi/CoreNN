@@ -20,6 +20,7 @@
 #include <cublas_v2.h>
 #include <cblas.h>
 #include <curand.h>
+#include <thrust/reduce.h>
 
 // #include <stdlib.h>
 // #include <stdio.h>
