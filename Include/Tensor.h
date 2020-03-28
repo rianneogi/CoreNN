@@ -88,7 +88,7 @@ inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_
 	// #warning remove asserts when fixed
 	// assert(m1->mData==m1->mStart && m2->mData==m2->mStart && res->mData == res->mStart);
 	// assert(m1->mLD == m1->mAllocShape[1] && m2->mLD == m2->mAllocShape[1] && res->mLD == res->mAllocShape[1]);
-	cblas_sgemm(CblasRowMajor, trans_m1, trans_m2,
+	cblas_sgemm(CblasColMajor, trans_m1, trans_m2,
 		res->rows(), //M
 		res->cols(), //N
 		trans_m1 == CblasNoTrans ? m1->cols() : m1->rows(), //K
@@ -123,6 +123,9 @@ inline void gemm_gpu(Tensor* m1, Tensor* m2, Tensor* res, cublasOperation_t tran
 	if(err!=CUBLAS_STATUS_SUCCESS)
 	{
 		printf("ERROR during sgemm %d\n", err);
+		assert(false);
+		// 13 = CUBLAS_STATUS_EXECUTION_FAILED
+		// 14 = CUBLAS_STATUS_INTERNAL_ERROR
 	}
 	// printf("%d\n", err);
 }

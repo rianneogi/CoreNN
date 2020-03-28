@@ -359,8 +359,8 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 {
 	assert(mErrorFuncs.size() > 0);
 	//assert(mOptimizer != nullptr);
-	assert(inputs.rows() == outputs.rows());
-	assert(inputs.rows() % batch_size == 0);
+	assert(inputs.cols() == outputs.cols());
+	assert(inputs.cols() % batch_size == 0);
 	double error = 0.0;
 	printf("Started training\n");
 	Clock clock;
@@ -371,7 +371,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 	for (int i = 0; i < epochs; i++)
 	{
 		error = 0.0;
-		for (int j = 0; j < inputs.rows() / batch_size; j++)
+		for (int j = 0; j < inputs.cols() / batch_size; j++)
 		{
 			tmp_input = inputs.cut(batch_size*j, batch_size);
 			tmp_output = outputs.cut(batch_size*j, batch_size);

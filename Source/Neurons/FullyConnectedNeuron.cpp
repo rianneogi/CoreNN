@@ -53,16 +53,16 @@ bool FullyConnectedNeuron::init()
 	assert(mInitializer!=nullptr);
 	assert(mInput->Data.mShape.size() == 2);
 	assert(mOutput->Data.mShape.size() == 2);
-	Weights = new Blob(make_shape(mInput->Data.cols(), mOutput->Data.cols()), Name + "Weights");
-	Biases = new Blob(make_shape(1, mOutput->Data.cols()), Name + "Bias");
+	Weights = new Blob(make_shape(mInput->Data.rows(), mOutput->Data.rows()), Name + "Weights");
+	Biases = new Blob(make_shape(1,mOutput->Data.rows()), Name + "Bias");
 	// BiasesStacked = new Blob(mOutput->Data.mShape, Name+"BiasStacked");
-	for (uint64_t i = 0; i < Weights->Data.cols(); i++)
+	for (uint64_t i = 0; i < Weights->Data.rows(); i++)
 	{
 		Biases->Data(i) = mInitializer->get_value(i);
 		// printf("b %d %f\n", i, Biases->Data(i));
-		for (uint64_t j = 0; j < Weights->Data.rows(); j++)
+		for (uint64_t j = 0; j < Weights->Data.cols(); j++)
 		{
-			Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.rows());
+			Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.cols());
 			// BiasesStacked->Data(j, i) = Biases->Data(i);
 			// printf("wt %d %d %f\n", j, i, Weights->Data(j,i));
 		}
@@ -70,14 +70,12 @@ bool FullyConnectedNeuron::init()
 	Biases->copyToGPU();
 	// BiasesStacked->copyToGPU();
 	Weights->copyToGPU();
-	InputSize = Weights->Data.rows();
-	OutputSize = Weights->Data.cols();
-	BatchSize = mOutput->Data.rows();
-	assert(mInput->Data.rows() == mOutput->Data.rows());
+	InputSize = Weights->Data.cols();
+	OutputSize = Weights->Data.rows();
+	BatchSize = mOutput->Data.cols();
+	assert(mInput->Data.cols() == mOutput->Data.cols());
 
-	//WeightsDelta = Tensor(make_shape(Weights->Data.rows(), Weights->Data.cols()));
-	//BiasesDelta = Tensor(make_shape(1, Biases->Data.mSize));
-	Ones = Tensor(make_shape(1, BatchSize));
+	Ones = Tensor(make_shape(1,BatchSize));
 	Ones.setconstant(1);
 	Ones.copyToGPU();
 
@@ -86,18 +84,19 @@ bool FullyConnectedNeuron::init()
 
 void FullyConnectedNeuron::forward()
 {
-	// printf("forward\n");
+	// printf("forward %s\n", Name.c_str());
 #ifdef USE_GPU
 	//Multiply with weights
-	gemm_gpu(&mInput->Data, &Weights->Data, &mOutput->Data, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
+	gemm_gpu(&Weights->Data, &mInput->Data, &mOutput->Data, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
 	// printf("done\n");
+	
 	//Add biases to every row
-	for (unsigned int i = 0; i < mInput->Data.rows();i++)
-	{
-		// Float *f = new float(1.0f);
-		Tensor tmp = mOutput->Data.cut(i,1);
-		saxpy_gpu(&Biases->Data, &tmp, 1.0f, 1, 1);
-	}
+	// for (unsigned int i = 0; i < mInput->Data.cols();i++)
+	// {
+	// 	// Float *f = new float(1.0f);
+	// 	Tensor tmp = mOutput->Data.cut(i,1);
+	// 	saxpy_gpu(&Biases->Data, &tmp, 1.0f, 1, 1);
+	// }
 #else
 	gemm_cpu(&mInput->Data, &Weights->Data, &mOutput->Data, CblasNoTrans, CblasNoTrans, 1, 0);
 	for (unsigned int i = 0; i < mInput->Data.rows(); i++)
@@ -114,13 +113,14 @@ void FullyConnectedNeuron::backprop()
 {
 #ifdef USE_GPU
 	//Weights
-	// printf("back1\n");
-	gemm_gpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CUBLAS_OP_N, CUBLAS_OP_T, 1, 1);
+	// printf("back1 %s\n", Name.c_str());
+	gemm_gpu(&Weights->Data, &mOutput->Delta, &mInput->Delta, CUBLAS_OP_T, CUBLAS_OP_N, 1, 1);
 	// printf("back2\n");
-	gemm_gpu(&mInput->Data, &mOutput->Delta, &Weights->Delta, CUBLAS_OP_T, CUBLAS_OP_N, 1, 0);
+	gemm_gpu(&mOutput->Delta, &mInput->Data, &Weights->Delta, CUBLAS_OP_N, CUBLAS_OP_T, 1, 0);
 
 	//Biases
-	gemm_gpu(&Ones, &mOutput->Delta, &Biases->Delta, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
+	// printf("back3\n");
+	gemm_gpu(&mOutput->Delta, &Ones, &Biases->Delta, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
 #else
 	//Weights
 	gemm_cpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CblasNoTrans, CblasTrans, 1, 1);

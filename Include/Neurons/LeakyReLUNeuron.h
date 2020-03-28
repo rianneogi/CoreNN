@@ -16,6 +16,11 @@ public:
 	bool init();
 
 	void forward();
+	void forwardGPU();
 	void backprop();
-	std::vector<Blob*> getVariables();
+	void backpropGPU();
+	std::vector<Blob *> getVariables();
 };
+
+__global__ void leaky_relu_forward(int size, float leak_factor, float *input_data, float* output_data);
+__global__ void leaky_relu_backprop(int size, float leak_factor, float *input_data, float *input_delta, float* output_data, float* output_delta);

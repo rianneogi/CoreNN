@@ -60,9 +60,13 @@ file(GLOB SOURCE_FILES
     Include/*.h
 
     Source/Neurons/*.cpp
+    Source/Neurons/*.cu
     Source/Optimizers/*.cpp
+    Source/Optimizers/*.cu
     Source/Initializers/*.cpp
+    Source/Initializers/*.cu
     Source/ErrorFunctions/*.cpp
+    Source/ErrorFunctions/*.cu
 
     Include/Neurons/*.h
     Include/Optimizers/*.h

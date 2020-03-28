@@ -192,8 +192,8 @@ int main()
 	// test_gemm_subtensor();
 	// test_im2col();
 
-	test_cugemm();
-	// test_fc();
+	// test_cugemm();
+	test_fc();
 	// cublas_matmul();
 	// test_conv();
 	// test_autoencoder();
