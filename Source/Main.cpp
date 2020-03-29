@@ -193,6 +193,7 @@ int main()
 	// test_im2col();
 
 	// test_cugemm();
+	// cublas_vector_add();
 	test_fc();
 	// cublas_matmul();
 	// test_conv();

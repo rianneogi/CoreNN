@@ -1,6 +1,6 @@
 #pragma once
 
-// #define NN_DEBUG
+#define NN_DEBUG
 #define USE_GPU
 
 #undef NDEBUG

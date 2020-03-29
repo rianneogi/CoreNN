@@ -3,7 +3,7 @@
 
 #include "CudaTests.h"
 
-void cublas_vector_add()
+void test_cublas_vector_add()
 {
     int n = 1 << 5;
     size_t bytes = n * sizeof(float);
@@ -19,8 +19,8 @@ void cublas_vector_add()
 
     for (int i = 0; i < n;i++)
     {
-        h_a[i] = i;
-        h_b[i] = 2 * i;
+        h_a[i] = i+1;
+        h_b[i] = 2 * i+1;
     }
 
     // cublasHandle_t handle;

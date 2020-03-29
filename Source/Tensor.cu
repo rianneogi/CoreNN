@@ -1,5 +1,10 @@
 #include "Tensor.h"
 
+__global__ void printVal(float* ptr)
+{
+	printf("%f\n", ptr[0]);
+}
+
 void Tensor::allocateGPU()
 {
 	// if (mMemory != NULL)
@@ -18,6 +23,7 @@ void Tensor::allocateGPU()
 		freeGPU();
 	}
 	gpuErrChk(cudaMalloc(&mDataGPU, mAllocSize * sizeof(Float)));
+	mStartGPU = mDataGPU;
 #endif
 }
 
@@ -34,12 +40,16 @@ void Tensor::freeGPU()
 	{
 		gpuErrChk(cudaFree(mDataGPU));
 		mDataGPU = NULL;
+		mStartGPU = NULL;
 	}
 #endif
 }
 
 void Tensor::copyToGPU()
 {
+#ifdef NN_DEBUG
+	assert(mData != NULL && mDataGPU != NULL);
+#endif
 #ifdef USE_GPU
 	gpuErrChk(cudaMemcpy(mDataGPU, mData, mAllocSize * sizeof(Float), cudaMemcpyHostToDevice));
 #endif
@@ -65,6 +75,9 @@ void Tensor::copyToGPU()
 
 void Tensor::copyToCPU()
 {
+#ifdef NN_DEBUG
+	assert(mData != NULL && mDataGPU != NULL);
+#endif
 #ifdef USE_GPU
 	gpuErrChk(cudaMemcpy(mData, mDataGPU, mAllocSize * sizeof(Float), cudaMemcpyDeviceToHost));
 #endif

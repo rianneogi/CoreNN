@@ -256,22 +256,22 @@ void test_fc()
 
 	Board b;
 	int batch_size = 100;
-	double learning_rate = 0.0005;
+	double learning_rate = 0.0001;
 	int epochs = 5;
 
 	Initializer* initializer = new RangeInitializer();
 
-	Blob* inputBlob = b.newBlob(make_shape(batch_size, 784));
-	Blob* layer1FCBlob = b.newBlob(make_shape(batch_size, 100));
-	Blob* layer1SigBlob = b.newBlob(make_shape(batch_size, 100));
-	Blob* layer2FCBlob = b.newBlob(make_shape(batch_size, 50));
-	Blob* layer2SigBlob = b.newBlob(make_shape(batch_size, 50));
+	Blob* inputBlob = b.newBlob(make_shape(batch_size, 784), "Input");
+	Blob* layer1FCBlob = b.newBlob(make_shape(batch_size, 100), "layer1FC");
+	Blob* layer1SigBlob = b.newBlob(make_shape(batch_size, 100), "layer1Sig");
+	Blob* layer2FCBlob = b.newBlob(make_shape(batch_size, 50), "layer2FC");
+	Blob* layer2SigBlob = b.newBlob(make_shape(batch_size, 50) ,"layer2Sig");
 	/*Blob* layer3FCBlob = b.newBlob(make_shape(batch_size, 12));
 	Blob* layer3SigBlob = b.newBlob(make_shape(batch_size, 12));*/
-	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10));
-	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10));
+	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10), "OutputFC");
+	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10), "OutputSig");
 
-	b.setOptimizer(new AdamOptimizer(learning_rate));
+	b.setOptimizer(new StandardOptimizer(learning_rate));
 
 	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer), "FC1");
 
@@ -295,6 +295,10 @@ void test_fc()
 	Tensor outputs_train = openidx_output(TEST_DATA_PATH + "train-labels.idx1-ubyte", 10);
 	Tensor inputs_test = openidx_input(TEST_DATA_PATH + "t10k-images.idx3-ubyte");
 	Tensor outputs_test = openidx_output(TEST_DATA_PATH + "t10k-labels.idx1-ubyte", 10);
+	// inputs_train.copyToGPU();
+	// outputs_train.copyToGPU();
+	// inputs_test.copyToGPU();
+	// outputs_test.copyToGPU();
 
 	/*TrainingData b1 = load_cifar("Data/cifar-10-batches-bin/data_batch_1.bin");
 	TrainingData b2 = load_cifar("Data/cifar-10-batches-bin/data_batch_2.bin");
@@ -356,7 +360,7 @@ void test_conv()
 	Board b;
 	int batch_size = 100;
 	int epochs = 5;
-	double learning_rate = 0.0005;
+	double learning_rate = 0.005;
 
 	Initializer* initializer = new RangeInitializer();
 
@@ -371,7 +375,7 @@ void test_conv()
 	Blob* l3fcBlob = b.newBlob(make_shape(batch_size, 10));
 	Blob* l3tanhBlob = b.newBlob(make_shape(batch_size, 10));
 
-	b.setOptimizer(new AdamOptimizer(0.005));
+	b.setOptimizer(new AdamOptimizer(learning_rate));
 	
 	b.addNeuron(new ReshapeNeuron(inputBlob, make_shape(batch_size,28,28,1)));
 	b.addNeuron(new Im2ColNeuron(inputBlob, l1convBlob, 3, 3));

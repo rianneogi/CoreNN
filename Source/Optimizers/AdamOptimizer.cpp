@@ -55,4 +55,6 @@ void AdamOptimizer::addVariable(Blob* blob)
 	Velocity.push_back(Tensor(blob->Data.mShape));
 	Momentum[Momentum.size() - 1].setzero();
 	Velocity[Velocity.size() - 1].setzero();
+	Momentum[Momentum.size() - 1].copyToGPU();
+	Velocity[Velocity.size() - 1].copyToGPU();
 }

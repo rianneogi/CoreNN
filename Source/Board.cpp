@@ -58,7 +58,7 @@ Blob* Board::newBlob(const TensorShape& shape)
 
 Blob* Board::newBlob(const TensorShape& shape, std::string name)
 {
-	Blob* b = new Blob(shape);
+	Blob* b = new Blob(shape, name);
 	mBlobNames[name] = mBlobs.size();
 	mBlobs.push_back(b);
 	return b;
@@ -264,6 +264,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	for (size_t i = 0; i < placeholders.size(); i++)
 	{
 		assert(mPlaceholders[i]->mSize==placeholders[i].mSize);
+		// printf("setting placeholder %d\n", i);
 		// mPlaceholders[i]->mData = placeholders[i].mData;
 		// mPlaceholders[i]->mStart = placeholders[i].mStart;
 		// mPlaceholders[i]->mLD = placeholders[i].mLD;
@@ -274,7 +275,10 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 		// *mPlaceholders[i] = placeholders[i];
 		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
 		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
-		
+		// printf("copying placeholder to gpu %d\n", i);
+		mPlaceholders[i]->allocateGPU();
+		mPlaceholders[i]->copyToGPU();
+
 		// uint64_t x = rand()%placeholders[i].mSize;
 		// // printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);
 		// assert(placeholders[i].at(x) == mPlaceholders[i]->mData[x]);
@@ -284,8 +288,8 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	//Forward Pass
 	for (size_t i = 0; i < mNeurons.size(); i++)
 	{
-		mNeurons[i]->forward();
 		// printf("forward %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Data(0), mBlobs[i+1]->Data(0));
+		mNeurons[i]->forward();
 	}
 
 	//Calculate Error
@@ -296,9 +300,8 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	// Backward Pass
 	for (int i = mNeurons.size() - 1; i >= 0; i--)
 	{
-		// printf("backprop %d\n", i);
-		mNeurons[i]->backprop();
 		// printf("backprop %d : %s %f %f\n", i, mBlobs[i]->Name.c_str(), mBlobs[i]->Delta(0), mBlobs[i+1]->Delta(0));
+		mNeurons[i]->backprop();
 	}
 	
 	// for(size_t i = 0;i<mOptimizer->Variables.size();i++)
@@ -371,7 +374,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 	for (int i = 0; i < epochs; i++)
 	{
 		error = 0.0;
-		for (int j = 0; j < inputs.cols() / batch_size; j++)
+		for (uint64_t j = 0; j < inputs.cols() / batch_size; j++)
 		{
 			tmp_input = inputs.cut(batch_size*j, batch_size);
 			tmp_output = outputs.cut(batch_size*j, batch_size);
@@ -404,13 +407,13 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 			if (mUseOptimizer)
 				mOptimizer->optimize();
 
-			// printf("%d/%d\n", j, inputs.rows() / batch_size);
+			// printf("BATCH: %d/%d\n", j+1, inputs.cols() / batch_size);
 
 			// placeholders.clear();
 		}
 		clock.Stop();
 		printf("Error %d: %f, epochs per sec: %f\n", i+1, error, ((i + 1)*1.0) / clock.ElapsedSeconds());
-		printf("Batches per sec: %f\n", (i+1.0)*(inputs.rows()*1.0 / batch_size) / clock.ElapsedSeconds());
+		printf("Batches per sec: %f\n", (i+1.0)*(inputs.cols()*1.0 / batch_size) / clock.ElapsedSeconds());
 	}
 	printf("Done training\n");
 

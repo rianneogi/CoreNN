@@ -26,25 +26,37 @@ void LeakyReLUNeuron::forward()
 {
 #ifdef USE_GPU
 	forwardGPU();
+	// forwardCPU();
 #else
+	forwardCPU();
+#endif
+	// printf("%f %f %f\n", mOutput->Data(0), mInput->Data(0), LeakFactor*mInput->Data(0));
+}
+
+void LeakyReLUNeuron::forwardCPU()
+{
 	for (uint64_t i = 0; i < mInput->Data.mAllocSize; i++)
 	{
 		mOutput->Data(i) = std::max(LeakFactor*mInput->Data(i), mInput->Data(i));
 	}
-#endif
-	// printf("%f %f %f\n", mOutput->Data(0), mInput->Data(0), LeakFactor*mInput->Data(0));
 }
 
 void LeakyReLUNeuron::backprop()
 {
 #ifdef USE_GPU
 	backpropGPU();
+	backpropCPU();
 #else
+	backpropCPU();
+#endif
+}
+
+void LeakyReLUNeuron::backpropCPU()
+{
 	for (uint64_t i = 0; i < mInput->Data.mAllocSize; i++)
 	{
 		mInput->Delta(i) += mOutput->Data(i) < 0.0? LeakFactor*mOutput->Delta(i): mOutput->Delta(i);
 	}
-#endif
 }
 
 std::vector<Blob*> LeakyReLUNeuron::getVariables()

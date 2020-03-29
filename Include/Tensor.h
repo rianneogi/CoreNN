@@ -20,13 +20,14 @@ public:
 	uint64_t mLD; //Size of leading dimension
 
 	float* mDataGPU;
+	float *mStartGPU;
 
 	Tensor();
 	//Tensor(const Tensor& other);
 	Tensor(const TensorShape& shape); //initialize tensor allocated with given shape
-	Tensor(Float* data, const TensorShape& shape); //initialize tensor pointing to existing data
+	Tensor(Float* data, const TensorShape& shape, bool is_gpu); //initialize tensor pointing to existing data
 	// Tensor(Float* data, const TensorShape& shape, uint64_t ld); //initialize tensor pointing to existing data and specify leading dimension
-	Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape); //initialize tensor pointing to existing data and specify leading dimension
+	Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape, bool is_gpu); //initialize tensor pointing to existing data and specify leading dimension
 	~Tensor();
 	
 	Float& at(uint64_t a) const; //slow
@@ -63,6 +64,11 @@ public:
 	Tensor cut2(uint64_t begin, uint64_t len) const; //cuts the tensor based on last dimension
 	Tensor submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const;
 
+	Tensor subtensorGPU(const TensorShape& begin, const TensorShape& size);
+	Tensor cutGPU(uint64_t begin, uint64_t len) const; //cuts the tensor based on primary dimension
+	Tensor cut2GPU(uint64_t begin, uint64_t len) const; //cuts the tensor based on last dimension
+	Tensor submatrixGPU(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const;
+
 	uint64_t rows() const;
 	uint64_t cols() const;
 
@@ -71,7 +77,8 @@ public:
 	void print_raw() const;
 };
 
-__global__ void printGPU(int m,int n,int ld,float* data); //prints GPU data as an mxn matrix, assumes column major
+__global__ void printVal(float *ptr);
+__global__ void printGPU(int m, int n, int ld, float *data); //prints GPU data as an mxn matrix, assumes column major
 
 inline void gemm_cpu(Tensor* m1, Tensor* m2, Tensor* res, CBLAS_TRANSPOSE trans_m1, CBLAS_TRANSPOSE trans_m2, Float alpha, Float beta)
 {
@@ -137,5 +144,5 @@ inline void add_vectors(Tensor* src, Tensor* dest, Float alpha) //test this
 
 inline void saxpy_gpu(Tensor* src, Tensor* dest, Float alpha, int xinc, int yinc) //test this
 {
-	cublasSaxpy_v2(gCuHandle,src->mSize, &alpha, src->mData, xinc, dest->mData, yinc);
+	cublasSaxpy_v2(gCuHandle,dest->mSize, &alpha, src->mStartGPU, xinc, dest->mStartGPU, yinc);
 }

@@ -11,6 +11,8 @@ public:
 	~MeanSquaredError();
 
 	Float calculateError();
+	Float calculateErrorGPU();
+	Float calculateErrorCPU();
 	void backprop();
 };
 

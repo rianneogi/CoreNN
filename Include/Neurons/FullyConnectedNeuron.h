@@ -28,6 +28,10 @@ public:
 	bool init();
 
 	void forward();
+	void forwardCPU();
+	void forwardGPU();
 	void backprop();
-	std::vector<Blob*> getVariables();
+	void backpropCPU();
+	void backpropGPU();
+	std::vector<Blob *> getVariables();
 };

@@ -2,7 +2,7 @@
 
 #define USE_MALLOC
 
-Tensor::Tensor() : mData(NULL), mDataGPU(NULL), mSize(0), mAllocSize(0), mLD(0), mStart(NULL)
+Tensor::Tensor() : mData(NULL), mDataGPU(NULL), mSize(0), mAllocSize(0), mLD(0), mStart(NULL), mStartGPU(NULL)
 {
 }
 
@@ -26,16 +26,31 @@ Tensor::Tensor(const TensorShape& shape) : mData(NULL), mDataGPU(NULL), mShape(s
 #endif
 }
 
-Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mDataGPU(NULL), mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
+Tensor::Tensor(Float* data, const TensorShape& shape, bool is_gpu) : mShape(shape), mSize(1), mAllocShape(shape), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(shape.size() <= 4 && "Max supported tensor shape is 4");
+
+	if (is_gpu)
+	{
+		mDataGPU = data;
+		mStartGPU = data;
+		mData = NULL;
+		mStart = NULL;
+	}
+	else
+	{
+		mData = data;
+		mStart = data;
+		mDataGPU = NULL;
+		mStartGPU = NULL;
+	}
+
 	for (unsigned int x : mShape)
 	{
 		mSize *= x;
 		mOffset.push_back(0);
 	}
 	mAllocSize = mSize;
-	mStart = mData;
 }
 
 // Tensor::Tensor(Float* data, const TensorShape& shape, uint64_t ld) : mData(data), mShape(shape), mSize(1), mMemory(NULL), mLD(ld)
@@ -47,12 +62,25 @@ Tensor::Tensor(Float* data, const TensorShape& shape) : mData(data), mDataGPU(NU
 // 	}
 // }
 
-Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape) : mData(data), mDataGPU(NULL), mAllocShape(shape), mSize(1), 
+Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset, const TensorShape& subshape, bool is_gpu) : mAllocShape(shape), mSize(1), 
 	mShape(subshape), mOffset(offset), mAllocSize(1), mLD(mAllocShape[mAllocShape.size()-1])
 {
 	assert(subshape.size()==shape.size());
 	assert(offset.size()==shape.size());
 	
+	if (is_gpu)
+	{
+		mDataGPU = data;
+		mData = NULL;
+		mStart = NULL;
+	}
+	else
+	{
+		mData = data;
+		mDataGPU = NULL;
+		mStartGPU = NULL;
+	}
+
 	uint64_t off = 0;
 	for(size_t i = 0;i<shape.size();i++)
 	{
@@ -65,7 +93,12 @@ Tensor::Tensor(Float* data, const TensorShape& shape, const TensorShape& offset,
 			off *= mAllocShape[i+1];
 		// printf("offstep: %d %d %d\n", off, mOffset[i], mAllocShape[i]);
 	}
-	mStart = &mData[off];
+
+	if(is_gpu)
+		mStartGPU = &mDataGPU[off];
+	else
+		mStart = &mData[off];
+	
 	// printf("mStart is %d, %d, %d, size %d\n", off, offset[0], offset[1], mAllocSize);
 }
 
@@ -147,6 +180,7 @@ void Tensor::copyFromTensor(const Tensor& other)
 	mStart = other.mStart;
 	mOffset = other.mOffset;
 	std::memcpy(mData, other.mData, other.mAllocSize*sizeof(Float));
+	cudaMemcpy(mDataGPU, other.mDataGPU, other.mAllocSize * sizeof(Float), cudaMemcpyDeviceToDevice);
 }
 
 void Tensor::copyFromSubtensor(const Tensor& other)
@@ -162,10 +196,13 @@ void Tensor::copyFromSubtensor(const Tensor& other)
 	{
 		mOffset.push_back(0);
 	}
-	for(uint64_t i = 0;i<mAllocSize;i++)
+	assert(mData != NULL);
+	for (uint64_t i = 0; i < mAllocSize; i++)
 	{
 		mData[i] = other.at(i);
 	}
+	// allocateGPU();
+	// copyToGPU();
 	// std::memcpy(mData, other.mData, other.mAllocSize*sizeof(Float));
 }
 
@@ -284,7 +321,7 @@ Tensor Tensor::subtensor(const TensorShape& begin, const TensorShape& size)
 	// 	ptr *= mShape[i];
 	// 	ptr += begin[i];
 	// }
-	return Tensor(mData, mShape, begin, size);
+	return Tensor(mData, mShape, begin, size, false);
 }
 
 Tensor Tensor::cut(uint64_t begin, uint64_t len) const
@@ -302,7 +339,7 @@ Tensor Tensor::cut(uint64_t begin, uint64_t len) const
 	{
 		offset.push_back(0);
 	}
-	return Tensor(mData, mShape, offset, shape);
+	return Tensor(mData, mShape, offset, shape, false);
 }
 
 Tensor Tensor::cut2(uint64_t begin, uint64_t len) const
@@ -313,7 +350,7 @@ Tensor Tensor::cut2(uint64_t begin, uint64_t len) const
 	TensorShape shape = mShape;
 	shape[1] = len;
 	TensorShape offset = make_shape(0, begin);
-	return Tensor(mData, mShape, offset, shape);
+	return Tensor(mData, mShape, offset, shape, false);
 }
 
 Tensor Tensor::submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const
@@ -327,7 +364,62 @@ Tensor Tensor::submatrix(uint64_t begin_row, uint64_t begin_col, uint64_t rows, 
 	TensorShape offset = make_shape(begin_row, begin_col);
 	
 	// #error fix this
-	return Tensor(mData, mShape, offset, shape);
+	return Tensor(mData, mShape, offset, shape, false);
+}
+
+Tensor Tensor::subtensorGPU(const TensorShape& begin, const TensorShape& size)
+{
+	assert(begin.size() == mShape.size() && size.size() == mShape.size());
+	// unsigned int ptr = 0;
+	// for (unsigned int i = 0; i <= begin.size(); i++)
+	// {
+	// 	ptr *= mShape[i];
+	// 	ptr += begin[i];
+	// }
+	return Tensor(mDataGPU, mShape, begin, size, true);
+}
+
+Tensor Tensor::cutGPU(uint64_t begin, uint64_t len) const
+{
+	//printf("%d %d %d\n", begin, len, mShape[0]);
+#ifdef NN_DEBUG
+	assert(begin + len <= mShape[0]);
+#endif
+	TensorShape shape = mShape;
+	shape[0] = len;
+	// return Tensor(&mData[begin*(mSize/mShape[0])], shape);
+	TensorShape offset;
+	offset.push_back(begin);
+	for(size_t i = 1; i<mShape.size();i++)
+	{
+		offset.push_back(0);
+	}
+	return Tensor(mDataGPU, mShape, offset, shape, true);
+}
+
+Tensor Tensor::cut2GPU(uint64_t begin, uint64_t len) const
+{
+#ifdef NN_DEBUG
+	assert(begin + len <= mShape[1]);
+#endif
+	TensorShape shape = mShape;
+	shape[1] = len;
+	TensorShape offset = make_shape(0, begin);
+	return Tensor(mDataGPU, mShape, offset, shape, true);
+}
+
+Tensor Tensor::submatrixGPU(uint64_t begin_row, uint64_t begin_col, uint64_t rows, uint64_t cols) const
+{
+#ifdef NN_DEBUG
+	assert(mShape.size() == 2 && "Not a matrix");
+	assert(begin_row + rows <= mShape[0]);
+	assert(begin_col + cols <= mShape[1]);
+#endif
+	TensorShape shape = make_shape(rows, cols);
+	TensorShape offset = make_shape(begin_row, begin_col);
+	
+	// #error fix this
+	return Tensor(mDataGPU, mShape, offset, shape, true);
 }
 
 uint64_t Tensor::rows() const

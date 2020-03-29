@@ -17,8 +17,10 @@ public:
 
 	void forward();
 	void forwardGPU();
+	void forwardCPU();
 	void backprop();
 	void backpropGPU();
+	void backpropCPU();
 	std::vector<Blob *> getVariables();
 };
 

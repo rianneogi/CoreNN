@@ -39,10 +39,6 @@ FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initialize
 
 FullyConnectedNeuron::~FullyConnectedNeuron()
 {
-	/*Weights.freememory();
-	Biases.freememory();
-	WeightsDelta.freememory();
-	BiasesDelta.freememory();*/
 	delete Weights;
 	delete Biases;
 	Ones.freemem();
@@ -84,22 +80,12 @@ bool FullyConnectedNeuron::init()
 
 void FullyConnectedNeuron::forward()
 {
-	// printf("forward %s\n", Name.c_str());
+	// printf("fc forward %s\n", Name.c_str());
 #ifdef USE_GPU
-	//Multiply with weights
-	gemm_gpu(&Weights->Data, &mInput->Data, &mOutput->Data, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
-	// printf("done\n");
-	
-	//Add biases to every row
-	// for (unsigned int i = 0; i < mInput->Data.cols();i++)
-	// {
-	// 	// Float *f = new float(1.0f);
-	// 	Tensor tmp = mOutput->Data.cut(i,1);
-	// 	saxpy_gpu(&Biases->Data, &tmp, 1.0f, 1, 1);
-	// }
+	forwardGPU();
 #else
 	gemm_cpu(&mInput->Data, &Weights->Data, &mOutput->Data, CblasNoTrans, CblasNoTrans, 1, 0);
-	for (unsigned int i = 0; i < mInput->Data.rows(); i++)
+	for (unsigned int i = 0; i < mInput->Data.cols(); i++)
 	{
 		for (unsigned int j = 0; j < Biases->Data.mSize; j++)
 		{
@@ -112,15 +98,7 @@ void FullyConnectedNeuron::forward()
 void FullyConnectedNeuron::backprop()
 {
 #ifdef USE_GPU
-	//Weights
-	// printf("back1 %s\n", Name.c_str());
-	gemm_gpu(&Weights->Data, &mOutput->Delta, &mInput->Delta, CUBLAS_OP_T, CUBLAS_OP_N, 1, 1);
-	// printf("back2\n");
-	gemm_gpu(&mOutput->Delta, &mInput->Data, &Weights->Delta, CUBLAS_OP_N, CUBLAS_OP_T, 1, 0);
-
-	//Biases
-	// printf("back3\n");
-	gemm_gpu(&mOutput->Delta, &Ones, &Biases->Delta, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
+	backpropGPU();
 #else
 	//Weights
 	gemm_cpu(&mOutput->Delta, &Weights->Data, &mInput->Delta, CblasNoTrans, CblasTrans, 1, 1);
