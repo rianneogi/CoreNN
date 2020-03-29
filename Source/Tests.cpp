@@ -256,7 +256,7 @@ void test_fc()
 
 	Board b;
 	int batch_size = 100;
-	double learning_rate = 0.000001;
+	double learning_rate = 0.005;
 	int epochs = 5;
 
 	Initializer* initializer = new RangeInitializer();
@@ -343,6 +343,40 @@ void test_fc()
 		printoutput(nn.forward(inputs_train.col(i)));
 		printf("%d %d\n", getoutput(nn.forward(inputs_train.col(i))), getoutput(outputs_train.col(i)));
 		}*/
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	b.train(inputs_train, outputs_train, 1, batch_size);
+	acc = 0;
+	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		for (int j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	b.train(inputs_train, outputs_train, 1, batch_size);
+	acc = 0;
+	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		for (int j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			if (result == target)
+			{
+				acc++;
+			}
+		}
 	}
 	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
 

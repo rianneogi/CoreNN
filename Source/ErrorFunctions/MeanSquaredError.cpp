@@ -22,7 +22,7 @@ Float MeanSquaredError::calculateError()
 	Float error = calculateErrorGPU();
 	Float cpuerror = calculateErrorCPU();
 	// printf("error %f %f\n", error, cpuerror);
-	assert(error <= cpuerror+1 && error >=cpuerror-1);
+	// assert(error <= cpuerror+1 && error >=cpuerror-1);
 #else
 	Float error = calculateErrorCPU();
 #endif
