@@ -256,7 +256,7 @@ void test_fc()
 
 	Board b;
 	int batch_size = 100;
-	double learning_rate = 0.0001;
+	double learning_rate = 0.000001;
 	int epochs = 5;
 
 	Initializer* initializer = new RangeInitializer();
@@ -271,7 +271,7 @@ void test_fc()
 	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10), "OutputFC");
 	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10), "OutputSig");
 
-	b.setOptimizer(new StandardOptimizer(learning_rate));
+	b.setOptimizer(new AdamOptimizer(learning_rate));
 
 	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer), "FC1");
 
