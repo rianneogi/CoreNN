@@ -27,7 +27,7 @@ void SigmoidNeuron::forwardGPU()
 	// printGPU<<<1, 1>>>(mInput->Data.mAllocSize,1,mInput->Data.mAllocSize,mInput->Data.mDataGPU);
 	// gpuErrChk(cudaDeviceSynchronize());
 	// gpuErrChk(cudaDeviceSynchronize());
-	tanh_forward<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
+	sigmoid_forward<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
 													   mInput->Data.mDataGPU, mOutput->Data.mDataGPU);
 	// printf("%s gpu data: %d %d \n", Name.c_str(), mInput->Data.mDataGPU, mOutput->Data.mDataGPU);
 	forwardCPU();
@@ -43,7 +43,7 @@ void SigmoidNeuron::backpropGPU()
 	int N = mInput->Data.mAllocSize;
 	int NUM_THREADS = 1 << 10;
 	int NUM_BLOCKS = (N + NUM_THREADS - 1) / NUM_THREADS;
-	tanh_backprop<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
+	sigmoid_backprop<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
 												mInput->Data.mDataGPU, mInput->Delta.mDataGPU,
 												mOutput->Data.mDataGPU, mOutput->Delta.mDataGPU);
 }
