@@ -13,7 +13,7 @@ float mse_calculate(int size,float* target, float* output_data, float* output_de
 
 Float MeanSquaredError::calculateErrorGPU()
 {
-	gpuErrChk(cudaDeviceSynchronize());
+	// gpuErrChk(cudaDeviceSynchronize());
 	int size = mOutput->Data.mAllocSize;
 	float* output_data = mOutput->Data.mDataGPU;
 	float* output_delta = mOutput->Delta.mDataGPU;
@@ -27,7 +27,7 @@ Float MeanSquaredError::calculateErrorGPU()
 	float error = 0.0f;
 	cublasSdot(gCuHandle, size, output_delta, 1, output_delta, 1, &error);
 	error *= 0.5f;
-	gpuErrChk(cudaDeviceSynchronize());
+	// gpuErrChk(cudaDeviceSynchronize());
 	return error;
 	// Float error = mse_calculate(mOutput->Data.mAllocSize,mTarget.mDataGPU,mOutput->Data.mDataGPU,mOutput->Delta.mDataGPU);
 }

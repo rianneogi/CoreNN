@@ -37,6 +37,15 @@ bool Im2ColNeuron::init()
 
 void Im2ColNeuron::forward()
 {
+	#ifdef USE_GPU
+	forwardGPU();
+	#else
+	forwardCPU();
+	#endif
+}
+
+void Im2ColNeuron::forwardCPU()
+{
 	for (uint64_t batch = 0;batch<BatchSize;batch++)
 	{
 		uint64_t sub_batch = 0;
@@ -85,6 +94,15 @@ void Im2ColNeuron::forward()
 }
 
 void Im2ColNeuron::backprop()
+{
+	#ifdef USE_GPU
+	backpropGPU();
+	#else
+	backpropCPU();
+	#endif
+}
+
+void Im2ColNeuron::backpropCPU()
 {
 	for (uint64_t batch = 0;batch<BatchSize;batch++)
 	{

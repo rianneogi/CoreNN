@@ -15,7 +15,7 @@ __global__ void adam_optimizer(int size, float learning_rate, float* data, float
 
 void AdamOptimizer::optimize()
 {
-	gpuErrChk(cudaDeviceSynchronize());
+	// gpuErrChk(cudaDeviceSynchronize());
 	for (size_t i = 0; i < Variables.size(); i++)
 	{
 		int N = Variables[i]->Delta.mSize;
@@ -33,7 +33,7 @@ void AdamOptimizer::optimize()
 			Momentum[i](j) = Beta1*Momentum[i](j) + (1.0 - Beta1)*Variables[i]->Delta(j);
 			Variables[i]->Data(j) -= (LearningRate*Momentum[i](j)) / (sqrt(Velocity[i](j)) + EPSILON);
 		}
-		gpuErrChk(cudaDeviceSynchronize());
+		// gpuErrChk(cudaDeviceSynchronize());
 		// printf("opt %d/%d %f ", i, Variables.size(), Variables[i]->Data(0));
 		// printVal<<<1, 1>>>(Variables[i]->Data.mDataGPU);
 		// gpuErrChk(cudaDeviceSynchronize());

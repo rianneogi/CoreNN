@@ -15,7 +15,7 @@ void FullyConnectedNeuron::forwardGPU()
 		saxpy_gpu(&Biases->Data, &tmp, 1.0f, 1, 1);
 		// printVal<<<1, 1>>>(Biases->Data.mStartGPU);
 		// printVal<<<1, 1>>>(tmp.mStartGPU);
-		cudaDeviceSynchronize();
+		// cudaDeviceSynchronize();
 	}
 
 	//CPU

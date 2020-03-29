@@ -5,6 +5,18 @@ __global__ void printVal(float* ptr)
 	printf("%f\n", ptr[0]);
 }
 
+__global__ void check(float* ptr,float val)
+{
+	if (ptr[0] <= val+0.01 && ptr[0]>=val-0.01)
+	{
+		printf("check passed %f %f %d\n",ptr[0],val,ptr);
+	}
+	else
+	{
+		printf("check failed %f %f %d\n",ptr[0],val,ptr);
+	}
+}
+
 void Tensor::allocateGPU()
 {
 	// if (mMemory != NULL)

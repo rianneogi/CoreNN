@@ -15,13 +15,31 @@ SigmoidNeuron::~SigmoidNeuron()
 
 void SigmoidNeuron::forward()
 {
+#ifdef USE_GPU
+	forwardGPU();
+#else
+	forwardCPU();
+#endif
+}
+
+void SigmoidNeuron::backprop()
+{
+#ifdef USE_GPU
+	backpropGPU();
+#else
+	backpropCPU();
+#endif
+}
+
+void SigmoidNeuron::forwardCPU()
+{
 	for (uint64_t i = 0; i < mOutput->Data.mSize; i++)
 	{
 		mOutput->Data(i) = sigmoid(mInput->Data(i));
 	}
 }
 
-void SigmoidNeuron::backprop()
+void SigmoidNeuron::backpropCPU()
 {
 	for (uint64_t i = 0; i < mInput->Delta.mSize; i++)
 	{

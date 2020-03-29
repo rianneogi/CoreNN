@@ -21,13 +21,31 @@ bool TanhNeuron::init()
 
 void TanhNeuron::forward()
 {
+#ifdef USE_GPU
+	forwardGPU();
+#else
+	forwardCPU();
+#endif
+}
+
+void TanhNeuron::backprop()
+{
+#ifdef USE_GPU
+	backpropGPU();
+#else
+	backpropCPU();
+#endif
+}
+
+void TanhNeuron::forwardCPU()
+{
 	for (uint64_t i = 0; i < mOutput->Data.mSize; i++)
 	{
 		mOutput->Data(i) = tanh(mInput->Data(i));
 	}
 }
 
-void TanhNeuron::backprop()
+void TanhNeuron::backpropCPU()
 {
 	for (uint64_t i = 0; i < mInput->Delta.mSize; i++)
 	{

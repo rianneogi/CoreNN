@@ -1,23 +1,25 @@
-#include "Neurons/LeakyReLUNeuron.h"
+#include "Neurons/SigmoidNeuron.h"
 
-__global__ void leaky_relu_forward(int size, float leak_factor, float *input_data, float* output_data)
+#warning todo: test this
+
+__global__ void sigmoid_forward(int size, float *input_data, float* output_data)
 {
 	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if (tid < size)
 	{
-		output_data[tid] = leak_factor * input_data[tid] > input_data[tid] ? leak_factor * input_data[tid] : input_data[tid];
+		output_data[tid] = 1.0/(1.0+exp(-input_data[tid]));
 	}
 }
-__global__ void leaky_relu_backprop(int size, float leak_factor, float *input_data, float *input_delta, float* output_data, float* output_delta)
+__global__ void sigmoid_backprop(int size, float *input_data, float *input_delta, float* output_data, float* output_delta)
 {
 	int tid = (blockIdx.x * blockDim.x) + threadIdx.x;
 	if (tid < size)
 	{
-		input_delta[tid] += output_data[tid] < 0.0f ? leak_factor * output_delta[tid] : output_delta[tid];
+		input_delta[tid] += output_delta[tid]*(1.0 - output_data[tid])*output_data[tid];
 	}
 }
 
-void LeakyReLUNeuron::forwardGPU()
+void SigmoidNeuron::forwardGPU()
 {
 	int N = mInput->Data.mAllocSize;
 	int NUM_THREADS = 1 << 10;
@@ -25,7 +27,7 @@ void LeakyReLUNeuron::forwardGPU()
 	// printGPU<<<1, 1>>>(mInput->Data.mAllocSize,1,mInput->Data.mAllocSize,mInput->Data.mDataGPU);
 	// gpuErrChk(cudaDeviceSynchronize());
 	// gpuErrChk(cudaDeviceSynchronize());
-	leaky_relu_forward<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize, LeakFactor,
+	tanh_forward<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
 													   mInput->Data.mDataGPU, mOutput->Data.mDataGPU);
 	// printf("%s gpu data: %d %d \n", Name.c_str(), mInput->Data.mDataGPU, mOutput->Data.mDataGPU);
 	forwardCPU();
@@ -36,12 +38,12 @@ void LeakyReLUNeuron::forwardGPU()
 
 }
 
-void LeakyReLUNeuron::backpropGPU()
+void SigmoidNeuron::backpropGPU()
 {
 	int N = mInput->Data.mAllocSize;
 	int NUM_THREADS = 1 << 10;
 	int NUM_BLOCKS = (N + NUM_THREADS - 1) / NUM_THREADS;
-	leaky_relu_backprop<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize, LeakFactor,
+	tanh_backprop<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
 												mInput->Data.mDataGPU, mInput->Delta.mDataGPU,
 												mOutput->Data.mDataGPU, mOutput->Delta.mDataGPU);
 }

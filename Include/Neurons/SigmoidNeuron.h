@@ -23,7 +23,11 @@ public:
 	~SigmoidNeuron();
 
 	void forward();
+	void forwardCPU();
+	void forwardGPU();
 	void backprop();
+	void backpropCPU();
+	void backpropGPU();
 	std::vector<Blob*> getVariables();
 };
 
