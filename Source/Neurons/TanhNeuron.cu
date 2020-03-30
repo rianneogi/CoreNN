@@ -30,7 +30,7 @@ void TanhNeuron::forwardGPU()
 	tanh_forward<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
 													   mInput->Data.mDataGPU, mOutput->Data.mDataGPU);
 	// printf("%s gpu data: %d %d \n", Name.c_str(), mInput->Data.mDataGPU, mOutput->Data.mDataGPU);
-	forwardCPU();
+	// forwardCPU();
 	// gpuErrChk(cudaDeviceSynchronize());
 	// check<<<1, 1>>>(mOutput->Data.mDataGPU, mOutput->Data.mData[0]);
 	// check<<<1, 1>>>(mInput->Data.mDataGPU, mInput->Data.mData[0]);

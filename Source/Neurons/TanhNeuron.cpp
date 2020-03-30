@@ -23,6 +23,7 @@ void TanhNeuron::forward()
 {
 #ifdef USE_GPU
 	forwardGPU();
+	forwardCPU();
 #else
 	forwardCPU();
 #endif
@@ -32,6 +33,7 @@ void TanhNeuron::backprop()
 {
 #ifdef USE_GPU
 	backpropGPU();
+	backpropCPU();
 #else
 	backpropCPU();
 #endif
