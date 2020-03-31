@@ -1,6 +1,6 @@
 #include "Optimizers/AdamOptimizer.h"
 
-Float EPSILON = 0.000000001;
+Float ADAM_EPSILON = 0.000000001;
 
 __global__ void adam_optimizer(int size, float learning_rate, float* data, float* delta, float* velocity, float* momentum, float beta1, float beta2, float epsilon)
 {
@@ -13,7 +13,7 @@ __global__ void adam_optimizer(int size, float learning_rate, float* data, float
 	}
 }
 
-void AdamOptimizer::optimize()
+void AdamOptimizer::optimizeGPU()
 {
 	// gpuErrChk(cudaDeviceSynchronize());
 	for (size_t i = 0; i < Variables.size(); i++)
@@ -24,15 +24,9 @@ void AdamOptimizer::optimize()
 		adam_optimizer<<<NUM_BLOCKS,NUM_THREADS>>>(Variables[i]->Delta.mSize, LearningRate,
 													   Variables[i]->Data.mDataGPU, Variables[i]->Delta.mDataGPU, 
 													   Velocity[i].mDataGPU, Momentum[i].mDataGPU,
-													   Beta1,Beta2,EPSILON);
+													   Beta1,Beta2,ADAM_EPSILON);
 
-		//update velocity CPU
-		for (uint64_t j = 0; j < Variables[i]->Delta.mSize; j++)
-		{
-			Velocity[i](j) = Beta2*Velocity[i](j) + (1.0 - Beta2)*Variables[i]->Delta(j)*Variables[i]->Delta(j);
-			Momentum[i](j) = Beta1*Momentum[i](j) + (1.0 - Beta1)*Variables[i]->Delta(j);
-			Variables[i]->Data(j) -= (LearningRate*Momentum[i](j)) / (sqrt(Velocity[i](j)) + EPSILON);
-		}
+		
 		// gpuErrChk(cudaDeviceSynchronize());
 		// printf("opt %d/%d %f ", i, Variables.size(), Variables[i]->Data(0));
 		// printVal<<<1, 1>>>(Variables[i]->Data.mDataGPU);

@@ -30,7 +30,7 @@ void test_cublas_vector_add()
     cublasSetVector(n, sizeof(float), h_b, 1, d_b, 1);
 
     const float scale = 2.0f;
-    cublasSaxpy(gCuHandle, n, &scale, d_a, 1, d_b, 1);
+    cublasSaxpy(gCublasHandle, n, &scale, d_a, 1, d_b, 1);
     cublasGetVector(n, sizeof(float), d_b, 1, h_c, 1);
 
     for (int i = 0; i < n;i++)
@@ -38,7 +38,7 @@ void test_cublas_vector_add()
         printf("%f\n", h_c[i]);
     }
 
-    // cublasDestroy(gCuHandle);
+    // cublasDestroy(gCublasHandle);
 
     cudaFree(d_a);
     cudaFree(d_b);
@@ -115,7 +115,7 @@ void cublas_matmul()
   // MxN = MxK * KxN
   // Signature: handle, operation, operation, M, N, K, alpha, A, lda, B, ldb,
   // beta, C, ldc
-  cublasSgemm(gCuHandle, CUBLAS_OP_N, CUBLAS_OP_N, M, N, K, &alpha, d_a, M, d_b, K,
+  cublasSgemm(gCublasHandle, CUBLAS_OP_N, CUBLAS_OP_N, M, N, K, &alpha, d_a, M, d_b, K,
               &beta, d_c, M);
 
   // Copy back the three matrices

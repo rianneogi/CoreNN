@@ -3,10 +3,10 @@
 float mse_calculate(int size,float* target, float* output_data, float* output_delta)
 {
 	float alpha = 1.0f;
-	cublasSaxpy_v2(gCuHandle, size, &alpha, output_data, 1, target, 1);
-	cublasScopy_v2(gCuHandle, size, target, 1, output_delta, 1);
+	cublasSaxpy_v2(gCublasHandle, size, &alpha, output_data, 1, target, 1);
+	cublasScopy_v2(gCublasHandle, size, target, 1, output_delta, 1);
 	float error = 0.0f;
-	cublasSdot(gCuHandle, size, target, 1, target, 1, &error);
+	cublasSdot(gCublasHandle, size, target, 1, target, 1, &error);
 	error *= 0.5f;
 	return error;
 }
@@ -22,10 +22,10 @@ Float MeanSquaredError::calculateErrorGPU()
 	// printGPU<<<1,1>>>(size, 1, size, output_data);
 	// gpuErrChk(cudaDeviceSynchronize());
 	cudaMemcpy(output_delta, output_data, size * sizeof(float), cudaMemcpyDeviceToDevice);
-	// cublasScopy_v2(gCuHandle, size, output_data, 1, output_delta, 1);
-	cublasSaxpy_v2(gCuHandle, size, &alpha, target, 1, output_delta, 1);
+	// cublasScopy_v2(gCublasHandle, size, output_data, 1, output_delta, 1);
+	cublasSaxpy_v2(gCublasHandle, size, &alpha, target, 1, output_delta, 1);
 	float error = 0.0f;
-	cublasSdot(gCuHandle, size, output_delta, 1, output_delta, 1, &error);
+	cublasSdot(gCublasHandle, size, output_delta, 1, output_delta, 1, &error);
 	error *= 0.5f;
 	// gpuErrChk(cudaDeviceSynchronize());
 	return error;

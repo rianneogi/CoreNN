@@ -118,7 +118,7 @@ inline void gemm_gpu(Tensor* m1, Tensor* m2, Tensor* res, cublasOperation_t tran
 	assert(N == res->cols());
 #endif
 	// #warning todo: test	
-	auto err = cublasSgemm_v2(gCuHandle, trans_m1, trans_m2,
+	auto err = cublasSgemm_v2(gCublasHandle, trans_m1, trans_m2,
 				   res->rows(),										  //M
 				   res->cols(),										  //N
 				   trans_m1 == CUBLAS_OP_N ? m1->cols() : m1->rows(), //K
@@ -144,5 +144,5 @@ inline void add_vectors(Tensor* src, Tensor* dest, Float alpha) //test this
 
 inline void saxpy_gpu(Tensor* src, Tensor* dest, Float alpha, int xinc, int yinc) //test this
 {
-	cublasSaxpy_v2(gCuHandle,dest->mSize, &alpha, src->mStartGPU, xinc, dest->mStartGPU, yinc);
+	cublasSaxpy_v2(gCublasHandle,dest->mSize, &alpha, src->mStartGPU, xinc, dest->mStartGPU, yinc);
 }

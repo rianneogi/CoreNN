@@ -18,10 +18,10 @@ void StandardOptimizer::optimize()
 	{
 #ifdef USE_GPU
 		saxpy_gpu(&(Variables[i]->Delta),&(Variables[i]->Data),-LearningRate,1,1);
-		for (uint64_t j = 0; j < Variables[i]->Data.mSize; j++)
-		{
-			Variables[i]->Data(j) -= LearningRate*Variables[i]->Delta(j);
-		}
+		// for (uint64_t j = 0; j < Variables[i]->Data.mSize; j++)
+		// {
+		// 	Variables[i]->Data(j) -= LearningRate*Variables[i]->Delta(j);
+		// }
 #else
 		// Float prev = Variables[i]->Data(0);
 		for (uint64_t j = 0; j < Variables[i]->Data.mSize; j++)

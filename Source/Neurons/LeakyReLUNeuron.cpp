@@ -45,7 +45,7 @@ void LeakyReLUNeuron::backprop()
 {
 #ifdef USE_GPU
 	backpropGPU();
-	backpropCPU();
+	// backpropCPU();
 #else
 	backpropCPU();
 #endif

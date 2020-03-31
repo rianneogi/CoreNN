@@ -17,7 +17,7 @@ void SigmoidNeuron::forward()
 {
 #ifdef USE_GPU
 	forwardGPU();
-	forwardCPU();
+	// forwardCPU();
 #else
 	forwardCPU();
 #endif
@@ -27,7 +27,7 @@ void SigmoidNeuron::backprop()
 {
 #ifdef USE_GPU
 	backpropGPU();
-	backpropCPU();
+	// backpropCPU();
 #else
 	backpropCPU();
 #endif

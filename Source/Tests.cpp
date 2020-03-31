@@ -275,14 +275,14 @@ void test_fc()
 
 	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer), "FC1");
 
-	b.addNeuron(new TanhNeuron(layer1FCBlob, layer1SigBlob), "Act1");
+	b.addNeuron(new SigmoidNeuron(layer1FCBlob, layer1SigBlob), "Act1");
 	b.addNeuron(new FullyConnectedNeuron(layer1SigBlob, layer2FCBlob, initializer), "FC2");
-	b.addNeuron(new TanhNeuron(layer2FCBlob, layer2SigBlob), "Act2");
+	b.addNeuron(new SigmoidNeuron(layer2FCBlob, layer2SigBlob), "Act2");
 
 	/*b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, layer3FCBlob, learning_rate));
 	b.addNeuron(new LeakyReLUNeuron(layer3FCBlob, layer3SigBlob, 0.05));*/
 	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob, initializer), "FC3");
-	b.addNeuron(new TanhNeuron(outputFCBlob, outputSigBlob), "Act3");
+	b.addNeuron(new SigmoidNeuron(outputFCBlob, outputSigBlob), "Act3");
 
 	b.addErrorFunction(new MeanSquaredError(outputSigBlob));
 
@@ -322,6 +322,7 @@ void test_fc()
 	for (size_t i = 0; i < inputs_test.rows()/batch_size; i++)
 	{
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
 		for (size_t j = 0; j < batch_size; j++)
 		{
 			unsigned int result = getoutput(o.cut(j, 1));
@@ -351,6 +352,7 @@ void test_fc()
 	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
 	{
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
 		for (int j = 0; j < batch_size; j++)
 		{
 			unsigned int result = getoutput(o.cut(j, 1));

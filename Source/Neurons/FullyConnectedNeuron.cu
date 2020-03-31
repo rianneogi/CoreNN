@@ -19,16 +19,16 @@ void FullyConnectedNeuron::forwardGPU()
 	}
 
 	//CPU
-	gemm_cpu(&Weights->Data, &mInput->Data, &mOutput->Data, CblasNoTrans, CblasNoTrans, 1, 0);
-	for (unsigned int i = 0; i < mInput->Data.cols(); i++)
-	{
-		// printf("cpu %f\n", mOutput->Data(i, 0));
-		for (unsigned int j = 0; j < Biases->Data.mSize; j++)
-		{
-			mOutput->Data(i, j) += Biases->Data(j);
-		}
-		// printf("%f\n%f\n", Biases->Data(0), mOutput->Data(i, 0));
-	}
+	// gemm_cpu(&Weights->Data, &mInput->Data, &mOutput->Data, CblasNoTrans, CblasNoTrans, 1, 0);
+	// for (unsigned int i = 0; i < mInput->Data.cols(); i++)
+	// {
+	// 	// printf("cpu %f\n", mOutput->Data(i, 0));
+	// 	for (unsigned int j = 0; j < Biases->Data.mSize; j++)
+	// 	{
+	// 		mOutput->Data(i, j) += Biases->Data(j);
+	// 	}
+	// 	// printf("%f\n%f\n", Biases->Data(0), mOutput->Data(i, 0));
+	// }
 }
 
 void FullyConnectedNeuron::backpropGPU()
@@ -44,11 +44,11 @@ void FullyConnectedNeuron::backpropGPU()
 	gemm_gpu(&mOutput->Delta, &Ones, &Biases->Delta, CUBLAS_OP_N, CUBLAS_OP_N, 1, 0);
 
 
-	gemm_cpu(&Weights->Data, &mOutput->Delta, &mInput->Delta, CblasTrans, CblasNoTrans, 1, 1);
-	// printf("back2\n");
-	gemm_cpu(&mOutput->Delta, &mInput->Data, &Weights->Delta, CblasNoTrans, CblasTrans, 1, 0);
+	// gemm_cpu(&Weights->Data, &mOutput->Delta, &mInput->Delta, CblasTrans, CblasNoTrans, 1, 1);
+	// // printf("back2\n");
+	// gemm_cpu(&mOutput->Delta, &mInput->Data, &Weights->Delta, CblasNoTrans, CblasTrans, 1, 0);
 
-	//Biases
-	// printf("back3\n");
-	gemm_cpu(&mOutput->Delta, &Ones, &Biases->Delta, CblasNoTrans, CblasNoTrans, 1, 0);
+	// //Biases
+	// // printf("back3\n");
+	// gemm_cpu(&mOutput->Delta, &Ones, &Biases->Delta, CblasNoTrans, CblasNoTrans, 1, 0);
 }

@@ -2,6 +2,8 @@
 
 #include "../Optimizer.h"
 
+extern Float ADAM_EPSILON;
+
 class AdamOptimizer : public Optimizer
 {
 public:
@@ -17,5 +19,7 @@ public:
 	~AdamOptimizer();
 
 	void optimize();
-	void addVariable(Blob* blob);
+	void optimizeCPU();
+	void optimizeGPU();
+	void addVariable(Blob *blob);
 };

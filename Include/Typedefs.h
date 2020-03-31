@@ -21,6 +21,7 @@
 #include <cblas.h>
 #include <curand.h>
 #include <thrust/reduce.h>
+#include <cudnn.h>
 
 // #include <stdlib.h>
 // #include <stdio.h>

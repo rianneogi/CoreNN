@@ -4,8 +4,8 @@ ConvNeuron::ConvNeuron() : Neuron(), LearningRate(1)
 {
 }
 
-ConvNeuron::ConvNeuron(Blob* input, Blob* output, Float learning_rate)
-	: mInput(input), mOutput(output), LearningRate(learning_rate)
+ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x=1, int dilation_y=1)
+	: mInput(input), mOutput(output), FieldWidth(filter_x), FieldHeight(filter_y), PaddingX(pad_x), PaddingY(pad_y), StrideX(stride_x), StrideY(stride_y), DilationX(dilation_x), DilationY(dilation_y)
 {
 	assert(input->Data.mShape.size() == 2);
 	assert(output->Data.mShape.size() == 2);
@@ -35,6 +35,64 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, Float learning_rate)
 	Ones.setconstant(1);
 
 	//assert(output->Data.cols() == FieldHeight*FieldWidth);
+
+	checkCUDNN(cudnnCreateTensorDescriptor(&InputDesc));
+	checkCUDNN(cudnnSetTensor4dDescriptor(InputDesc,
+                                      /*format=*/CUDNN_TENSOR_NHWC,
+                                      /*dataType=*/CUDNN_DATA_FLOAT,
+                                      /*batch_size=*/BatchSize,
+                                      /*channels=*/InputDepth,
+                                      /*image_height=*/InputHeight,
+                                      /*image_width=*/InputWidth));
+
+	checkCUDNN(cudnnCreateTensorDescriptor(&OutputDesc));
+	checkCUDNN(cudnnSetTensor4dDescriptor(OutputDesc,
+                                      /*format=*/CUDNN_TENSOR_NHWC,
+                                      /*dataType=*/CUDNN_DATA_FLOAT,
+                                      /*batch_size=*/BatchSize,
+                                      /*channels=*/OutputDepth,
+                                      /*image_height=*/OutputHeight,
+                                      /*image_width=*/OutputWidth));
+
+	checkCUDNN(cudnnCreateFilterDescriptor(&FilterDesc));
+	checkCUDNN(cudnnSetFilter4dDescriptor(FilterDesc,
+                                      /*dataType=*/CUDNN_DATA_FLOAT,
+                                      /*format=*/CUDNN_TENSOR_NCHW,
+                                      /*out_channels=*/OutputDepth,
+                                      /*in_channels=*/InputDepth,
+                                      /*kernel_height=*/FieldHeight,
+                                      /*kernel_width=*/FieldWidth));
+
+	checkCUDNN(cudnnCreateConvolutionDescriptor(&ConvDesc));
+	checkCUDNN(cudnnSetConvolution2dDescriptor(ConvDesc,
+                                           /*pad_height=*/PaddingY,
+                                           /*pad_width=*/PaddingX,
+                                           /*vertical_stride=*/StrideY,
+                                           /*horizontal_stride=*/StrideX,
+                                           /*dilation_height=*/DilationY,
+                                           /*dilation_width=*/DilationX,
+                                           /*mode=*/CUDNN_CROSS_CORRELATION,
+                                           /*computeType=*/CUDNN_DATA_FLOAT));
+
+	checkCUDNN(cudnnGetConvolutionForwardAlgorithm(gCudnnHandle,
+                                        InputDesc,
+                                        FilterDesc,
+                                        ConvDesc,
+                                        OutputDesc,
+                                        CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
+                                        /*memoryLimitInBytes=*/0,
+                                        &ForwardAlg));
+
+	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(gCudnnHandle,
+                                                   InputDesc,
+                                                   FilterDesc,
+                                                   ConvDesc,
+                                                   OutputDesc,
+                                                   ForwardAlg,
+                                                   &ForwardWorkspaceBytes));
+
+	printf("Forward Workspace size: %d MB\n", (ForwardWorkspaceBytes / 1048576.0));
+	gpuErrChk(cudaMalloc(&dForwardWorkspace,ForwardWorkspaceBytes));
 }
 
 ConvNeuron::~ConvNeuron()

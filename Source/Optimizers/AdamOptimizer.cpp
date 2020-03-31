@@ -22,6 +22,29 @@ AdamOptimizer::~AdamOptimizer()
 	}
 }
 
+void AdamOptimizer::optimize()
+{
+	#ifdef USE_GPU
+	optimizeGPU();
+	#else
+	optimizeCPU();
+	#endif
+}
+
+void AdamOptimizer::optimizeCPU()
+{
+	for (size_t i = 0; i < Variables.size(); i++)
+	{
+		//update velocity CPU
+		for (uint64_t j = 0; j < Variables[i]->Delta.mSize; j++)
+		{
+			Velocity[i](j) = Beta2*Velocity[i](j) + (1.0 - Beta2)*Variables[i]->Delta(j)*Variables[i]->Delta(j);
+			Momentum[i](j) = Beta1*Momentum[i](j) + (1.0 - Beta1)*Variables[i]->Delta(j);
+			Variables[i]->Data(j) -= (LearningRate*Momentum[i](j)) / (sqrt(Velocity[i](j)) + ADAM_EPSILON);
+		}
+	}
+}
+
 void AdamOptimizer::addVariable(Blob* blob)
 {
 	Variables.push_back(blob);

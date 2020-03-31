@@ -179,7 +179,7 @@
 int main()
 {
 	srand(time(0));
-	initCublas();
+	initCuda();
 	printf("Cublas initialized\n");
 	// initCL();
 
@@ -209,7 +209,7 @@ int main()
 	//_getch();
 
 	//cleanupOpenCL();
-	cleanupCublas();
+	cleanupCuda();
 
 	return 0;
 }

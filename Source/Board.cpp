@@ -140,6 +140,8 @@ Tensor Board::forward(const std::vector<Tensor>& placeholders)
 		// *mPlaceholders[i] = placeholders[i];
 		// *mPlaceholders[i] = Tensor(placeholders[i].mAllocShape);
 		mPlaceholders[i]->copyFromSubtensor(placeholders[i]);
+		mPlaceholders[i]->allocateGPU();
+		mPlaceholders[i]->copyToGPU();
 		
 		// uint64_t x = rand()%placeholders[i].mSize;
 		// // printf("place %f %f %f\n",placeholders[i].at(x), mPlaceholders[i]->mData[x], mPlaceholders[i]->mStart[x]);

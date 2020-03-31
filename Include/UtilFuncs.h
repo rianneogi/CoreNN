@@ -3,7 +3,8 @@
 #include "Typedefs.h"
 #include "Clock.h"
 
-extern cublasHandle_t gCuHandle;
+extern cublasHandle_t gCublasHandle;
+extern cudnnHandle_t gCudnnHandle;
 
 double clamp(double x);
 
@@ -37,5 +38,15 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
    }
 }
 
-void initCublas();
-void cleanupCublas();
+#define checkCUDNN(expression)                               \
+  {                                                          \
+    cudnnStatus_t status = (expression);                     \
+    if (status != CUDNN_STATUS_SUCCESS) {                    \
+      std::cerr << "Error on line " << __LINE__ << ": "      \
+                << cudnnGetErrorString(status) << std::endl; \
+      std::exit(EXIT_FAILURE);                               \
+    }                                                        \
+  }
+
+void initCuda();
+void cleanupCuda();
