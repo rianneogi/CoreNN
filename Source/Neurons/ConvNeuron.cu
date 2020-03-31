@@ -6,16 +6,16 @@ void ConvNeuron::forwardGPU()
 	checkCUDNN(cudnnConvolutionForward(gCudnnHandle,
                                    &alpha,
                                    InputDesc,
-                                   d_input,
+                                   mInput->Data.mDataGPU,
                                    FilterDesc,
-                                   d_kernel,
+                                   Weights->Data.mDataGPU,
                                    ConvDesc,
                                    ForwardAlg,
                                    dForwardWorkspace,
                                    ForwardWorkspaceBytes,
                                    &beta,
                                    OutputDesc,
-                                   d_output));
+                                   mOutput->Data.mDataGPU));
 
 }
 

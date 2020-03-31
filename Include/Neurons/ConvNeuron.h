@@ -30,9 +30,9 @@ public:
 	Blob* Weights;
 	Blob* Biases;
 
-	Tensor Ones;
+	// Tensor Ones;
 
-	Float LearningRate;
+	// Float LearningRate;
 
 	cudnnTensorDescriptor_t InputDesc;
 	cudnnTensorDescriptor_t OutputDesc;
