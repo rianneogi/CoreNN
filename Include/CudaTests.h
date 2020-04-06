@@ -7,6 +7,7 @@ void test_cublas_matmul();
 void test_cugemm();
 void test_cugemm_symm();
 void test_cudnn_conv();
+void test_cudnn_forward();
 
 // boost::gil::rgb8_image_t load_image(std::string path)
 // {

@@ -196,6 +196,7 @@ int main()
 	// cublas_vector_add();
 	// test_fc();
 	test_cudnn_conv();
+	// test_cudnn_forward();
 	// test_cublas_matmul();
 	// test_conv();
 	// test_autoencoder();

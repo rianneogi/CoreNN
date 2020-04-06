@@ -318,6 +318,222 @@ void test_cugemm_symm()
 	t3.freemem();
 }
 
+void test_cudnn_forward()
+{
+	ilInit();
+	std::string path = "tensorflow.png";
+	// load_image("tensorflow.png");
+	ILuint imageName;
+	ilGenImages(1, &imageName);
+	ilBindImage(imageName);
+	ilLoadImage(path.c_str());
+	// auto view = boost::gil::view(img);
+
+	// auto channels = view.num_channels();
+	// auto dim = view.dimensions();
+	// printf("dim %d %d %d %d\n", dim.x, dim.y, dim.num_dimensions, channels);
+
+	int ip_width = ilGetInteger(IL_IMAGE_WIDTH);
+	int ip_height = ilGetInteger(IL_IMAGE_HEIGHT);
+	int ip_channels = ilGetInteger(IL_IMAGE_CHANNELS);
+
+	printf("dim %d %d %d\n", ip_width, ip_height, ip_channels);
+
+	cudnnTensorDescriptor_t input_descriptor;
+	checkCUDNN(cudnnCreateTensorDescriptor(&input_descriptor));
+	checkCUDNN(cudnnSetTensor4dDescriptor(input_descriptor,
+											/*format=*/CUDNN_TENSOR_NHWC,
+											/*dataType=*/CUDNN_DATA_FLOAT,
+											/*batch_size=*/1,
+											/*channels=*/4,
+											/*image_height=*/ip_height,
+											/*image_width=*/ip_width));
+
+	cudnnFilterDescriptor_t kernel_descriptor;
+	checkCUDNN(cudnnCreateFilterDescriptor(&kernel_descriptor));
+	checkCUDNN(cudnnSetFilter4dDescriptor(kernel_descriptor,
+											/*dataType=*/CUDNN_DATA_FLOAT,
+											/*format=*/CUDNN_TENSOR_NCHW,
+											/*out_channels=*/4,
+											/*in_channels=*/4,
+											/*kernel_height=*/3,
+											/*kernel_width=*/3));
+
+	cudnnConvolutionDescriptor_t convolution_descriptor;
+	checkCUDNN(cudnnCreateConvolutionDescriptor(&convolution_descriptor));
+	checkCUDNN(cudnnSetConvolution2dDescriptor(convolution_descriptor,
+												/*pad_height=*/1,
+												/*pad_width=*/1,
+												/*vertical_stride=*/1,
+												/*horizontal_stride=*/1,
+												/*dilation_height=*/1,
+												/*dilation_width=*/1,
+												/*mode=*/CUDNN_CROSS_CORRELATION,
+												/*computeType=*/CUDNN_DATA_FLOAT));
+
+	int batch_size{0}, channels{0}, height{0}, width{0};
+	checkCUDNN(cudnnGetConvolution2dForwardOutputDim(convolution_descriptor,
+													input_descriptor,
+													kernel_descriptor,
+													&batch_size,
+													&channels,
+													&height,
+													&width));
+
+	std::cerr << "Output Image: " << batch_size << " batches of " << height << " x " << width << " x " << channels << std::endl;
+
+	cudnnTensorDescriptor_t output_descriptor;
+	checkCUDNN(cudnnCreateTensorDescriptor(&output_descriptor));
+	checkCUDNN(cudnnSetTensor4dDescriptor(output_descriptor,
+											/*format=*/CUDNN_TENSOR_NHWC,
+											/*dataType=*/CUDNN_DATA_FLOAT,
+											/*batch_size=*/batch_size,
+											/*channels=*/channels,
+											/*image_height=*/height,
+											/*image_width=*/width));
+
+	cudnnConvolutionFwdAlgo_t convolution_algorithm;
+	checkCUDNN(
+		cudnnGetConvolutionForwardAlgorithm(gCudnnHandle,
+											input_descriptor,
+											kernel_descriptor,
+											convolution_descriptor,
+											output_descriptor,
+											CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
+											/*memoryLimitInBytes=*/0,
+											&convolution_algorithm));
+
+	size_t workspace_bytes{0};
+	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(gCudnnHandle,
+														input_descriptor,
+														kernel_descriptor,
+														convolution_descriptor,
+														output_descriptor,
+														convolution_algorithm,
+														&workspace_bytes));
+	std::cerr << "Workspace size: " << (workspace_bytes / 1048576.0) << "MB"
+				<< std::endl;
+	// assert(workspace_bytes > 0);
+
+	void* d_workspace{nullptr};
+	gpuErrChk(cudaMalloc(&d_workspace, workspace_bytes));
+
+	int image_bytes = batch_size * channels * height * width * sizeof(float);
+	assert(image_bytes == ip_width * ip_height * 4*sizeof(float));
+
+	float* d_input{nullptr};
+	gpuErrChk(cudaMalloc(&d_input, ip_height * ip_width * 4 * sizeof(float)));
+
+	ILubyte* bytes = ilGetData();
+	float *bytes2 = new float[ip_height * ip_width * 4];
+	for (int i = 0; i < ip_height * ip_width * 4; i++)
+	{
+		bytes2[i] = bytes[i] / 255.0;
+	}
+	printf("copied image to input\n");
+
+	gpuErrChk(cudaMemcpy(d_input, bytes2, ip_height * ip_width * 4 * sizeof(float), cudaMemcpyHostToDevice));
+
+	printf("copied input to GPU\n");
+
+	float* d_output{nullptr};
+	cudaMalloc(&d_output, image_bytes);
+	cudaMemset(d_output, 0, image_bytes);
+
+	// clang-format off
+	const float kernel_template[3][3] = {
+		{1, 1, 1},
+		{1, -8, 1},
+		{1, 1, 1}
+	};
+	// clang-format on
+
+	float h_kernel[4][4][3][3];
+	for (int kernel = 0; kernel < 4; ++kernel) {
+		for (int channel = 0; channel < 4; ++channel) {
+		for (int row = 0; row < 3; ++row) {
+			for (int column = 0; column < 3; ++column) {
+			h_kernel[kernel][channel][row][column] = kernel_template[row][column];
+			}
+		}
+		}
+	}
+
+	float* d_kernel{nullptr};
+	cudaMalloc(&d_kernel, sizeof(h_kernel));
+	cudaMemcpy(d_kernel, h_kernel, sizeof(h_kernel), cudaMemcpyHostToDevice);
+
+	const float alpha = 1.0f, beta = 0.0f;
+
+	checkCUDNN(cudnnConvolutionForward(gCudnnHandle,
+										&alpha,
+										input_descriptor,
+										d_input,
+										kernel_descriptor,
+										d_kernel,
+										convolution_descriptor,
+										convolution_algorithm,
+										d_workspace,
+										workspace_bytes,
+										&beta,
+										output_descriptor,
+										d_output));
+
+	// if (with_sigmoid) {
+	// 	cudnnActivationDescriptor_t activation_descriptor;
+	// 	checkCUDNN(cudnnCreateActivationDescriptor(&activation_descriptor));
+	// 	checkCUDNN(cudnnSetActivationDescriptor(activation_descriptor,
+	// 											CUDNN_ACTIVATION_SIGMOID,
+	// 											CUDNN_PROPAGATE_NAN,
+	// 											/*relu_coef=*/0));
+	// 	checkCUDNN(cudnnActivationForward(cudnn,
+	// 									activation_descriptor,
+	// 									&alpha,
+	// 									output_descriptor,
+	// 									d_output,
+	// 									&beta,
+	// 									output_descriptor,
+	// 									d_output));
+	// 	cudnnDestroyActivationDescriptor(activation_descriptor);
+	// }
+
+	float* h_output = new float[image_bytes];
+	cudaMemcpy(h_output, d_output, image_bytes, cudaMemcpyDeviceToHost);
+
+	for (int i = 0; i < image_bytes;i++)
+	{
+		if(h_output[i]!=0)
+			printf("%f ", h_output[i]);
+	}
+
+	ILuint imageName2;
+	ilGenImages(1, &imageName2);
+	ilBindImage(imageName2);
+	ILubyte *bytes3 = new ILubyte[width * height * 4];
+	ilTexImage(width, height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, bytes3);
+	// ilSetInteger(IL_IMAGE_WIDTH, width);
+	// ilSetInteger(IL_IMAGE_HEIGHT, height);
+	printf("copying output\n");
+	for (int i = 0; i < ip_height * ip_width * 4; i++)
+	{
+		bytes3[i] = std::max(0.0,std::min(255.0,h_output[i] * 255.0));
+	}
+	auto error = ilGetError();
+	printf("error %d\n",error);
+	ilSetPixels(0, 0, 0, ip_width, ip_height, 4, IL_RGBA, IL_UNSIGNED_BYTE, bytes3);
+	// ilSetInteger(IL_IMAGE_WIDTH, width);
+	// ilSetInteger(IL_IMAGE_HEIGHT, height);
+	error = ilGetError();
+	printf("error %d\n",error);
+	// printf(iluErrorString(error));
+	printf("saving\n");
+	ilEnable(IL_FILE_OVERWRITE);
+	ilSaveImage("output.png");
+	error = ilGetError();
+	printf("error %d\n",error);
+}
+
+
 void test_cudnn_conv()
 {
 	ilInit();
@@ -398,6 +614,8 @@ void test_cudnn_conv()
 	// ilSetInteger(IL_IMAGE_WIDTH, width);
 	// ilSetInteger(IL_IMAGE_HEIGHT, height);
 	ILubyte *bytes2 = new ILubyte[width * height * 4];
+	ilTexImage(width, height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, bytes2);
+
 	printf("copying output\n");
 	for (int i = 0; i < height; i++)
 	{
