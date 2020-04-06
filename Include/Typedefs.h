@@ -22,6 +22,12 @@
 #include <curand.h>
 #include <thrust/reduce.h>
 #include <cudnn.h>
+// #include <boost/gil.hpp>
+// #include <boost/gil/io/io.hpp>
+// #include <boost/gil/extension/io/tiff.hpp>
+
+#include <IL/il.h>
+#include <IL/ilu.h>
 
 // #include <stdlib.h>
 // #include <stdio.h>

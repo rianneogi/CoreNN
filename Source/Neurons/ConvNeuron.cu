@@ -2,7 +2,13 @@
 
 void ConvNeuron::forwardGPU()
 {
-	const float alpha = 1, beta = 0;
+#ifdef NN_DEBUG
+    assert(mInput->Data.mDataGPU != NULL);
+    assert(Weights->Data.mDataGPU != NULL);
+    assert(mOutput->Data.mDataGPU != NULL);
+#endif
+
+    const float alpha = 1, beta = 0;
 	checkCUDNN(cudnnConvolutionForward(gCudnnHandle,
                                    &alpha,
                                    InputDesc,
@@ -16,7 +22,7 @@ void ConvNeuron::forwardGPU()
                                    &beta,
                                    OutputDesc,
                                    mOutput->Data.mDataGPU));
-
+    // printf("conv forward\n");
 }
 
 void ConvNeuron::backpropGPU()

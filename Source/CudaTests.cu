@@ -3,6 +3,39 @@
 
 #include "CudaTests.h"
 
+// #include <opencv4/opencv2/opencv.hpp>
+
+// cv::Mat load_image(const char* image_path) {
+//   cv::Mat image = cv::imread(image_path);
+//   image.convertTo(image, CV_32FC3);
+//   cv::normalize(image, image, 0, 1, cv::NORM_MINMAX);
+//   return image;
+// }
+
+// void save_image(const char* output_filename,
+//                 float* buffer,
+//                 int height,
+//                 int width) {
+//   cv::Mat output_image(height, width, CV_32FC3, buffer);
+//   // Make negative values zero.
+//   cv::threshold(output_image,
+//                 output_image,
+//                 /*threshold=*/0,
+//                 /*maxval=*/0,
+//                 cv::THRESH_TOZERO);
+//   cv::normalize(output_image, output_image, 0.0, 255.0, cv::NORM_MINMAX);
+//   output_image.convertTo(output_image, CV_8UC3);
+//   cv::imwrite(output_filename, output_image);
+// }
+
+// void load_image(std::string path)
+// {
+// 	ILuint imageName;
+// 	ilGenImages(1, &imageName);
+// 	ilBindImage(imageName);
+// 	ilLoadImage(path.c_str());
+// }
+
 void test_cublas_vector_add()
 {
     int n = 1 << 5;
@@ -68,7 +101,7 @@ void verify_solution(float *a, float *b, float *c, int M, int N, int K) {
   }
 }
 
-void cublas_matmul()
+void test_cublas_matmul()
 {
   // Dimensions for our matrices
   // MxK * KxN = MxN
@@ -283,4 +316,121 @@ void test_cugemm_symm()
 	t2.freemem();
 	// t2_t.freemem();
 	t3.freemem();
+}
+
+void test_cudnn_conv()
+{
+	ilInit();
+	std::string path = "tensorflow.png";
+	// load_image("tensorflow.png");
+	ILuint imageName;
+	ilGenImages(1, &imageName);
+	ilBindImage(imageName);
+	ilLoadImage(path.c_str());
+	// auto view = boost::gil::view(img);
+
+	// auto channels = view.num_channels();
+	// auto dim = view.dimensions();
+	// printf("dim %d %d %d %d\n", dim.x, dim.y, dim.num_dimensions, channels);
+
+	int width = ilGetInteger(IL_IMAGE_WIDTH);
+	int height = ilGetInteger(IL_IMAGE_HEIGHT);
+	int channels = ilGetInteger(IL_IMAGE_CHANNELS);
+
+	printf("dim %d %d %d\n", width, height, channels);
+
+	Blob *input = new Blob(make_shape(1,3,width,height)); 
+	Blob *output = new Blob(make_shape(1,3,width,height));
+	output->Data.setconstant(255);
+	output->Data.copyToGPU();
+	ConvNeuron *neuron = new ConvNeuron(input, output, 3, 3, 1, 1, 1, 1);
+
+	ILubyte* bytes = ilGetData();
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			// printf( "%s\n", "Red Value for Pixel");
+			// printf( "%d ", bytes[(i*width + j)*4 + 0]);
+			input->Data(0, 0, j, i) = bytes[(i * width + j) * 4 + 0];
+			// printf("%s\n", "Green Value for Pixel");
+			// printf( "%d\n", bytes[(i*width + j)*4 + 1]);
+			input->Data(0, 1, j, i) = bytes[(i * width + j) * 4 + 1];
+			// printf( "%s\n", "Blue Value for Pixel");
+			// printf( "%d\n", bytes[(i*width + j)*4 + 2]);
+			input->Data(0, 2, j, i) = bytes[(i * width + j) * 4 + 2];
+		}
+	}
+	printf("copied image to input\n");
+	input->Data.copyToGPU();
+
+	// Mystery kernel
+	const float kernel_template[3][3] = {
+	{1,  1, 1},
+	{1, -8, 1},
+	{1,  1, 1}
+	};
+
+	// float h_kernel[3][3][3][3];
+	for (int kernel = 0; kernel < 3; ++kernel) 
+	{
+		for (int channel = 0; channel < 3; ++channel) 
+		{
+			for (int row = 0; row < 3; ++row) 
+			{
+				for (int column = 0; column < 3; ++column) 
+				{
+					neuron->Weights->Data(kernel,channel,row,column) = kernel_template[row][column];
+					neuron->Weights->Data(kernel,channel,row,column) = (rand()%1024)/1024;
+				}
+			}
+		}
+	}
+	printf("set kernel\n");
+	neuron->Weights->Data.copyToGPU();
+
+	neuron->forward();
+	output->Data.copyToCPU();
+
+	ILuint imageName2;
+	ilGenImages(1, &imageName2);
+	ilBindImage(imageName2);
+	// ilSetInteger(IL_IMAGE_WIDTH, width);
+	// ilSetInteger(IL_IMAGE_HEIGHT, height);
+	ILubyte *bytes2 = new ILubyte[width * height * 4];
+	printf("copying output\n");
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			// printf( "%s\n", "Red Value for Pixel");
+			// printf( "%d\n", bytes[(i*width + j)*4 + 0]);
+			bytes2[(i * width + j) * 4 + 0] = output->Data(0,0,j,i);
+			bytes2[(i * width + j) * 4 + 1] = output->Data(0,1,j,i);
+			bytes2[(i * width + j) * 4 + 2] = output->Data(0,2,j,i);
+			bytes2[(i * width + j) * 4 + 3] = 155;
+			printf("%d ", output->Data(0, 0, j, i));
+			// printf("%s\n", "Green Value for Pixel");
+			// printf( "%d\n", bytes[(i*width + j)*4 + 1]);
+			// input->Data(0, 1, j, i) = bytes[(i * width + j) * 4 + 1];
+			// printf( "%s\n", "Blue Value for Pixel");
+			// printf( "%d\n", bytes[(i*width + j)*4 + 2]);
+			// input->Data(0, 2, j, i) = bytes[(i * width + j) * 4 + 2];
+		}
+	}
+	auto error = ilGetError();
+	printf("error %d\n",error);
+	ilSetPixels(0, 0, 0, width, height, 4, IL_RGBA, IL_UNSIGNED_BYTE, bytes2);
+	error = ilGetError();
+	printf("error %d\n",error);
+	// printf(iluErrorString(error));
+	printf("saving\n");
+	ilEnable(IL_FILE_OVERWRITE);
+	ilSaveImage("output.png");
+	error = ilGetError();
+	printf("error %d\n",error);
+	// printf("%s\n", iluErrorString(error));
+	// printf("Output in output.png\n");
+	// save_image("cudnn-out.png", output->Data.mData, output->Data.mShape[2], output->Data.mShape[3]);
+	//extract output
 }

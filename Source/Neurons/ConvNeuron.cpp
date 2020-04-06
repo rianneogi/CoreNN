@@ -77,6 +77,12 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
                                            /*mode=*/CUDNN_CROSS_CORRELATION,
                                            /*computeType=*/CUDNN_DATA_FLOAT));
 
+	assert(InputDesc != NULL);
+	assert(OutputDesc != NULL);
+	assert(FilterDesc != NULL);
+	assert(ConvDesc != NULL);
+	assert(gCudnnHandle != NULL);
+
 	checkCUDNN(cudnnGetConvolutionForwardAlgorithm(gCudnnHandle,
                                         InputDesc,
                                         FilterDesc,
@@ -86,13 +92,15 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
                                         /*memoryLimitInBytes=*/0,
                                         &ForwardAlg));
 
+	// printf("Forward alg: %d\n", ForwardAlg);
+
 	int n, c, h, w;
 	checkCUDNN(cudnnGetConvolution2dForwardOutputDim(ConvDesc, InputDesc, FilterDesc, &n, &c, &h, &w));
 	assert(n == BatchSize);
 	assert(c == OutputDepth);
 	assert(h == OutputHeight);
 	assert(w == OutputWidth);
-
+	
 	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(gCudnnHandle,
 													   InputDesc,
 													   FilterDesc,
@@ -101,7 +109,7 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 													   ForwardAlg,
 													   &ForwardWorkspaceBytes));
 
-	printf("Forward Workspace size: %d MB\n", (ForwardWorkspaceBytes / 1048576.0));
+	printf("Forward Workspace size: %f MB\n", (ForwardWorkspaceBytes / 1048576.0));
 	gpuErrChk(cudaMalloc(&dForwardWorkspace,ForwardWorkspaceBytes));
 }
 
@@ -113,6 +121,11 @@ ConvNeuron::~ConvNeuron()
 	BiasesDelta.freememory();*/
 	delete Weights;
 	delete Biases;
+
+	checkCUDNN(cudnnDestroyTensorDescriptor(InputDesc));
+	checkCUDNN(cudnnDestroyTensorDescriptor(OutputDesc));
+	checkCUDNN(cudnnDestroyFilterDescriptor(FilterDesc));
+	checkCUDNN(cudnnDestroyConvolutionDescriptor(ConvDesc));
 	// Ones.freemem();
 }
 

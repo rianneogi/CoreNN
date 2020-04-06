@@ -194,8 +194,9 @@ int main()
 
 	// test_cugemm();
 	// cublas_vector_add();
-	test_fc();
-	// cublas_matmul();
+	// test_fc();
+	test_cudnn_conv();
+	// test_cublas_matmul();
 	// test_conv();
 	// test_autoencoder();
 
@@ -204,7 +205,7 @@ int main()
 	// cublas_test();
 
 	timer.Stop();
-	// printf("\nTotal time taken: %d\n", timer.ElapsedMilliseconds());
+	printf("\nTotal time taken: %d\n", timer.ElapsedMilliseconds());
 
 	//_getch();
 

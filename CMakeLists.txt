@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8.2)
 
 # find_package(CUDA QUIET REQUIRED)
 enable_language(CUDA)
-
+find_package(OpenCV REQUIRED)
 # include(${CMAKE_BINARY_DIR}/CMakeTools/CMakeToolsHelpers.cmake)
 
 # set(CUDAToolkit_ROOT "/opt/cuda/")
@@ -46,6 +46,9 @@ include_directories("Include")
 
 include_directories("/home/rian/Code/Libraries/OpenBLAS/include")
 include_directories("/opt/cuda/include")
+# include_directories("/libraw/")
+# include_directories("/usr/include/opencv4")
+# include_directories(${OpenCV_INCLUDE_DIRS})
 # include_directories("/opt/AMDAPPSDK-3.0/include")
 # include_directories("/home/rian/Code/Libraries/clBLAS-2.12.0-Linux-x64/include")
 
@@ -89,6 +92,29 @@ target_link_libraries(CoreNN_test libcuda.so)
 target_link_libraries(CoreNN_test libcublas.so)
 target_link_libraries(CoreNN_test libcurand.so)
 target_link_libraries(CoreNN_test libcudnn.so)
+target_link_libraries(CoreNN_test libIL.so)
+target_link_libraries(CoreNN_test libILU.so)
+target_link_libraries(CoreNN_test libILUT.so)
+# target_link_libraries(CoreNN_test libtiff.so)
+# target_link_libraries(CoreNN_test libjpeg.so)
+# target_link_libraries(CoreNN_test libpng.so)
+# target_link_libraries(CoreNN_test libraw.so)
+# target_link_libraries(CoreNN_test libopencv_gapi.so)
+# target_link_libraries(CoreNN_test libopencv_dnn.so)
+# target_link_libraries(CoreNN_test libopencv_ximgproc.so)
+# target_link_libraries(CoreNN_test libopencv_imgcodecs.so)
+# target_link_libraries(CoreNN_test libopencv_imgproc.so)
+# target_link_libraries(CoreNN_test libopencv_core.so)
+# target_link_libraries(CoreNN_test ${OpenCV_LIBS})
+# -lopencv_gapi -lopencv_stitching -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired
+#  -lopencv_ccalib -lopencv_cvv -lopencv_dnn_objdetect -lopencv_dnn_superres -lopencv_dpm -lopencv_highgui 
+#  -lopencv_face -lopencv_freetype -lopencv_fuzzy -lopencv_hdf -lopencv_hfs -lopencv_img_hash -lopencv_line_descriptor -lopencv_quality 
+#  -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_stereo -lopencv_structured_light -lopencv_phase_unwrapping -lopencv_superres -lopencv_optflow -lopencv_surface_matching 
+#  -lopencv_tracking -lopencv_datasets -lopencv_text -lopencv_dnn -lopencv_plot -lopencv_videostab -lopencv_videoio -lopencv_viz -lopencv_xfeatures2d -lopencv_shape -lopencv_ml 
+#  -lopencv_ximgproc -lopencv_video -lopencv_xobjdetect -lopencv_objdetect -lopencv_calib3d -lopencv_imgcodecs -lopencv_features2d -lopencv_flann -lopencv_xphoto -lopencv_photo 
+#  -lopencv_imgproc -lopencv_core 
+
+
 # target_link_libraries(CoreNN_test libOpenCL.so.1)
 # target_link_libraries(CoreNN_test libclBLAS2.so)
 target_link_libraries(CoreNN_test pthread)

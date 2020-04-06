@@ -36,6 +36,7 @@ void Tensor::allocateGPU()
 	}
 	gpuErrChk(cudaMalloc(&mDataGPU, mAllocSize * sizeof(Float)));
 	mStartGPU = mDataGPU;
+	printf("allocation GPU %d\n", mDataGPU);
 #endif
 }
 
