@@ -528,7 +528,7 @@ void test_cudnn_forward()
 	// printf(iluErrorString(error));
 	printf("saving\n");
 	ilEnable(IL_FILE_OVERWRITE);
-	ilSaveImage("output.png");
+	ilSaveImage("output2.png");
 	error = ilGetError();
 	printf("error %d\n",error);
 }
@@ -555,27 +555,34 @@ void test_cudnn_conv()
 
 	printf("dim %d %d %d\n", width, height, channels);
 
-	Blob *input = new Blob(make_shape(1,3,width,height)); 
-	Blob *output = new Blob(make_shape(1,3,width,height));
+	Blob *input = new Blob(make_shape(1,height,width,4)); 
+	printf("bdim %d %d %d\n", width, height, channels);
+	Blob *output = new Blob(make_shape(1,height,width,4));
+	printf("adim %d %d %d\n", width, height, channels);
 	output->Data.setconstant(255);
 	output->Data.copyToGPU();
 	ConvNeuron *neuron = new ConvNeuron(input, output, 3, 3, 1, 1, 1, 1);
 
 	ILubyte* bytes = ilGetData();
-	for (int i = 0; i < height; i++)
+	// for (int i = 0; i < width; i++)
+	// {
+	// 	for (int j = 0; j < height; j++)
+	// 	{
+	// 		// printf( "%s\n", "Red Value for Pixel");
+	// 		// printf( "%d ", bytes[(i*width + j)*4 + 0]);
+	// 		input->Data(0, 0, j, i) = bytes[(i * height + j) * 4 + 0]/255.0;
+	// 		// printf("%s\n", "Green Value for Pixel");
+	// 		// printf( "%d\n", bytes[(i*width + j)*4 + 1]);
+	// 		input->Data(0, 1, j, i) = bytes[(i * height + j) * 4 + 1]/255.0;
+	// 		// printf( "%s\n", "Blue Value for Pixel");
+	// 		// printf( "%d\n", bytes[(i*width + j)*4 + 2]);
+	// 		input->Data(0, 2, j, i) = bytes[(i * height + j) * 4 + 2]/255.0;
+	// 		input->Data(0, 3, j, i) = 0;
+	// 	}
+	// }
+	for (int i = 0;i<height*width*4;i++)
 	{
-		for (int j = 0; j < width; j++)
-		{
-			// printf( "%s\n", "Red Value for Pixel");
-			// printf( "%d ", bytes[(i*width + j)*4 + 0]);
-			input->Data(0, 0, j, i) = bytes[(i * width + j) * 4 + 0];
-			// printf("%s\n", "Green Value for Pixel");
-			// printf( "%d\n", bytes[(i*width + j)*4 + 1]);
-			input->Data(0, 1, j, i) = bytes[(i * width + j) * 4 + 1];
-			// printf( "%s\n", "Blue Value for Pixel");
-			// printf( "%d\n", bytes[(i*width + j)*4 + 2]);
-			input->Data(0, 2, j, i) = bytes[(i * width + j) * 4 + 2];
-		}
+		input->Data(i) = bytes[i] / 255.0;
 	}
 	printf("copied image to input\n");
 	input->Data.copyToGPU();
@@ -587,17 +594,23 @@ void test_cudnn_conv()
 	{1,  1, 1}
 	};
 
-	// float h_kernel[3][3][3][3];
-	for (int kernel = 0; kernel < 3; ++kernel) 
+	for (int i = 0; i < 4;i++)
 	{
-		for (int channel = 0; channel < 3; ++channel) 
+		printf("dim %d %d, ", i, neuron->Weights->Data.mAllocShape[i]);
+		assert(neuron->Weights->Data.mAllocShape[i] == neuron->Weights->Data.mShape[i]);
+	}
+
+	// float h_kernel[3][3][3][3];
+	for (int kernel = 0; kernel < 4; ++kernel)
+	{
+		for (int channel = 0; channel < 4; ++channel)
 		{
-			for (int row = 0; row < 3; ++row) 
+			for (int row = 0; row < 3; ++row)
 			{
-				for (int column = 0; column < 3; ++column) 
+				for (int column = 0; column < 3; ++column)
 				{
-					neuron->Weights->Data(kernel,channel,row,column) = kernel_template[row][column];
-					neuron->Weights->Data(kernel,channel,row,column) = (rand()%1024)/1024;
+					neuron->Weights->Data(kernel, channel, row, column) = kernel_template[row][column];
+					// neuron->Weights->Data(kernel,channel,row,column) = (rand()%1024)/1024;
 				}
 			}
 		}
@@ -617,24 +630,34 @@ void test_cudnn_conv()
 	ilTexImage(width, height, 1, 4, IL_RGBA, IL_UNSIGNED_BYTE, bytes2);
 
 	printf("copying output\n");
-	for (int i = 0; i < height; i++)
+	// for (int i = 0; i < width; i++)
+	// {
+	// 	for (int j = 0; j < height; j++)
+	// 	{
+	// 		// printf( "%s\n", "Red Value for Pixel");
+	// 		// printf( "%d\n", bytes[(i*width + j)*4 + 0]);
+	// 		bytes2[(i * height + j) * 4 + 0] = 127+std::max(-127.0f,std::min(127.0f,output->Data(0,0,j,i)*127.0f));
+	// 		bytes2[(i * height + j) * 4 + 1] = 127+std::max(-127.0f,std::min(127.0f,output->Data(0,1,j,i)*127.0f));
+	// 		bytes2[(i * height + j) * 4 + 2] = 127+std::max(-127.0f,std::min(127.0f,output->Data(0,2,j,i)*127.0f));
+	// 		bytes2[(i * height + j) * 4 + 3] = 255;
+	// 		// bytes2[(i * width + j) * 4 + 3] = 255;
+	// 		printf("%f %f %f ", output->Data(0, 0, j, i), output->Data(0, 1, j, i), output->Data(0, 2, j, i));
+	// 		// printf("%s\n", "Green Value for Pixel");
+	// 		// printf( "%d\n", bytes[(i*width + j)*4 + 1]);
+	// 		// input->Data(0, 1, j, i) = bytes[(i * width + j) * 4 + 1];
+	// 		// printf( "%s\n", "Blue Value for Pixel");
+	// 		// printf( "%d\n", bytes[(i*width + j)*4 + 2]);
+	// 		// input->Data(0, 2, j, i) = bytes[(i * width + j) * 4 + 2];
+	// 	}
+	// }
+	for (int i = 0; i < height * width * 4;i++)
 	{
-		for (int j = 0; j < width; j++)
-		{
-			// printf( "%s\n", "Red Value for Pixel");
-			// printf( "%d\n", bytes[(i*width + j)*4 + 0]);
-			bytes2[(i * width + j) * 4 + 0] = output->Data(0,0,j,i);
-			bytes2[(i * width + j) * 4 + 1] = output->Data(0,1,j,i);
-			bytes2[(i * width + j) * 4 + 2] = output->Data(0,2,j,i);
-			bytes2[(i * width + j) * 4 + 3] = 155;
-			printf("%d ", output->Data(0, 0, j, i));
-			// printf("%s\n", "Green Value for Pixel");
-			// printf( "%d\n", bytes[(i*width + j)*4 + 1]);
-			// input->Data(0, 1, j, i) = bytes[(i * width + j) * 4 + 1];
-			// printf( "%s\n", "Blue Value for Pixel");
-			// printf( "%d\n", bytes[(i*width + j)*4 + 2]);
-			// input->Data(0, 2, j, i) = bytes[(i * width + j) * 4 + 2];
-		}
+		bytes2[i] = std::max(0.0f,std::min(255.0f,output->Data(i)*255.0f));
+		// printf("%f ", output->Data(i));
+		// if(i%4==3)
+		// {
+		// 	bytes2[i] = 255;
+		// }
 	}
 	auto error = ilGetError();
 	printf("error %d\n",error);

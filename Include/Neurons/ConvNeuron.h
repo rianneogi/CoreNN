@@ -39,8 +39,17 @@ public:
 	cudnnFilterDescriptor_t FilterDesc;
 	cudnnConvolutionDescriptor_t ConvDesc;
 	cudnnConvolutionFwdAlgo_t ForwardAlg;
+	cudnnConvolutionBwdDataAlgo_t BackwardDataAlg;
+	cudnnConvolutionBwdFilterAlgo_t BackwardFilterAlg;
 	size_t ForwardWorkspaceBytes;
 	void *dForwardWorkspace;
+	size_t BackwardDataWorkspaceBytes;
+	void *dBackwardDataWorkspace;
+	size_t BackwardFilterWorkspaceBytes;
+	void *dBackwardFilterWorkspace;
+
+	cudnnTensorFormat_t TensorFormat;
+	cudnnTensorFormat_t FilterFormat;
 
 	ConvNeuron();
 	ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x=1, int dilation_y=1);
