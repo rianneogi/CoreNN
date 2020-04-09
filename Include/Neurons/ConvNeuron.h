@@ -55,6 +55,8 @@ public:
 	ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x=1, int dilation_y=1);
 	~ConvNeuron();
 
+	bool init();
+
 	void forward();
 	void forwardGPU();
 	void backprop();
