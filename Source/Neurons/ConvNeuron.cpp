@@ -8,15 +8,18 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 	: mInput(input), mOutput(output), FieldWidth(filter_x), FieldHeight(filter_y), PaddingX(pad_x), PaddingY(pad_y), 
 	  StrideX(stride_x), StrideY(stride_y), DilationX(dilation_x), DilationY(dilation_y)
 {
+	#ifdef NN_DEBUG
 	assert(input->Data.mShape.size() == 4);
 	assert(output->Data.mShape.size() == 4);
 	assert(input->Data.mShape[0] == output->Data.mShape[0]);
+	#endif
+
 	BatchSize = input->Data.mShape[0];
 
 	// InputSize = input->Data.mShape[1];
 
-	TensorFormat = CUDNN_TENSOR_NCHW;
-	FilterFormat = CUDNN_TENSOR_NCHW;
+	TensorFormat = CUDNN_TENSOR_NHWC;
+	FilterFormat = CUDNN_TENSOR_NHWC;
 
 	if(TensorFormat==CUDNN_TENSOR_NCHW)
 	{
@@ -127,6 +130,16 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 	assert(ConvDesc != NULL);
 	assert(gCudnnHandle != NULL);
 
+	int n, c, h, w;
+	checkCUDNN(cudnnGetConvolution2dForwardOutputDim(ConvDesc, InputDesc, FilterDesc, &n, &c, &h, &w));
+
+	printf("conv output dims: current: %d %d %d %d, target: %d %d %d %d\n", BatchSize,OutputDepth,OutputHeight,OutputWidth,n,c,h,w);
+
+	assert(n == BatchSize);
+	assert(c == OutputDepth);
+	assert(h == OutputHeight);
+	assert(w == OutputWidth);
+
 	checkCUDNN(cudnnGetConvolutionForwardAlgorithm(gCudnnHandle,
                                         InputDesc,
                                         FilterDesc,
@@ -140,13 +153,6 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 	checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(gCudnnHandle, InputDesc, OutputDesc, ConvDesc, FilterDesc, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0, &BackwardFilterAlg));
 
 	// printf("Forward alg: %d\n", ForwardAlg);
-
-	int n, c, h, w;
-	checkCUDNN(cudnnGetConvolution2dForwardOutputDim(ConvDesc, InputDesc, FilterDesc, &n, &c, &h, &w));
-	assert(n == BatchSize);
-	assert(c == OutputDepth);
-	assert(h == OutputHeight);
-	assert(w == OutputWidth);
 	
 	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(gCudnnHandle,
 													   InputDesc,
