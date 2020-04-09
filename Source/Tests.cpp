@@ -367,7 +367,7 @@ void test_fc()
 
 	b.train(inputs_train, outputs_train, 1, batch_size);
 	acc = 0;
-	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	for (size_t i = 0; i < inputs_test.cols() / batch_size; i++)
 	{
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
 		for (int j = 0; j < batch_size; j++)
@@ -380,7 +380,7 @@ void test_fc()
 			}
 		}
 	}
-	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.cols());
 
 	inputs_train.freemem();
 	inputs_test.freemem();
@@ -394,7 +394,7 @@ void test_fc()
 void test_conv()
 {
 	Board b;
-	int batch_size = 100;
+	int batch_size = 1000;
 	int epochs = 5;
 	double learning_rate = 0.005;
 
@@ -444,7 +444,7 @@ void test_conv()
 	b.train(inputs_train, outputs_train, epochs, batch_size);
 
 	int acc = 0;
-	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	for (size_t i = 0; i < inputs_test.cols() / batch_size; i++)
 	{
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
 		o.copyToCPU();
@@ -458,7 +458,7 @@ void test_conv()
 			}
 		}
 	}
-	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.cols());
 
 	inputs_train.freemem();
 	inputs_test.freemem();
@@ -516,9 +516,10 @@ void test_im2col()
 	b.train(inputs_train, outputs_train, epochs, batch_size);
 
 	int acc = 0;
-	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	for (size_t i = 0; i < inputs_test.cols() / batch_size; i++)
 	{
 		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
 		for (int j = 0; j < batch_size; j++)
 		{
 			unsigned int result = getoutput(o.cut(j, 1));
@@ -529,7 +530,7 @@ void test_im2col()
 			}
 		}
 	}
-	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.cols());
 
 	inputs_train.freemem();
 	inputs_test.freemem();
