@@ -15,7 +15,7 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 
 	// InputSize = input->Data.mShape[1];
 
-	TensorFormat = CUDNN_TENSOR_NHWC;
+	TensorFormat = CUDNN_TENSOR_NCHW;
 	FilterFormat = CUDNN_TENSOR_NCHW;
 
 	if(TensorFormat==CUDNN_TENSOR_NCHW)
@@ -42,6 +42,8 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 	{
 		printf("ERROR: ConvNeuron unsupported tensor format\n");
 	}
+
+	printf("conv %d %d %d %d %d %d %d\n", BatchSize, InputDepth, InputHeight, InputWidth, OutputDepth, OutputHeight, OutputWidth);
 
 	if(FilterFormat==CUDNN_TENSOR_NCHW)
 	{
@@ -134,8 +136,8 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
                                         /*memoryLimitInBytes=*/0,
                                         &ForwardAlg));
 
-	// checkCUDNN(cudnnGetConvolutionBackwardDataAlgorithm(gCudnnHandle, FilterDesc, OutputDesc, ConvDesc, InputDesc, CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, 0, &BackwardDataAlg));
-	// checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(gCudnnHandle, InputDesc, OutputDesc, ConvDesc, FilterDesc, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0, &BackwardFilterAlg));
+	checkCUDNN(cudnnGetConvolutionBackwardDataAlgorithm(gCudnnHandle, FilterDesc, OutputDesc, ConvDesc, InputDesc, CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, 0, &BackwardDataAlg));
+	checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(gCudnnHandle, InputDesc, OutputDesc, ConvDesc, FilterDesc, CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, 0, &BackwardFilterAlg));
 
 	// printf("Forward alg: %d\n", ForwardAlg);
 
@@ -156,11 +158,11 @@ ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, in
 
 	gpuErrChk(cudaMalloc(&dForwardWorkspace,ForwardWorkspaceBytes));
 
-	// checkCUDNN(cudnnGetConvolutionBackwardDataWorkspaceSize(gCudnnHandle, FilterDesc, OutputDesc, ConvDesc, InputDesc, BackwardDataAlg, &BackwardDataWorkspaceBytes));
-	// gpuErrChk(cudaMalloc(&dBackwardDataWorkspace, BackwardDataWorkspaceBytes));
+	checkCUDNN(cudnnGetConvolutionBackwardDataWorkspaceSize(gCudnnHandle, FilterDesc, OutputDesc, ConvDesc, InputDesc, BackwardDataAlg, &BackwardDataWorkspaceBytes));
+	gpuErrChk(cudaMalloc(&dBackwardDataWorkspace, BackwardDataWorkspaceBytes));
 
-	// checkCUDNN(cudnnGetConvolutionBackwardFilterWorkspaceSize(gCudnnHandle, InputDesc, OutputDesc, ConvDesc, FilterDesc, BackwardFilterAlg, &BackwardFilterWorkspaceBytes));
-	// gpuErrChk(cudaMalloc(&dBackwardFilterWorkspace, BackwardFilterWorkspaceBytes));
+	checkCUDNN(cudnnGetConvolutionBackwardFilterWorkspaceSize(gCudnnHandle, InputDesc, OutputDesc, ConvDesc, FilterDesc, BackwardFilterAlg, &BackwardFilterWorkspaceBytes));
+	gpuErrChk(cudaMalloc(&dBackwardFilterWorkspace, BackwardFilterWorkspaceBytes));
 
 	printf("Workspace sizes: %f, %f, %f MB\n", (ForwardWorkspaceBytes / 1048576.0),(BackwardDataWorkspaceBytes / 1048576.0),(BackwardFilterWorkspaceBytes / 1048576.0));
 }
