@@ -366,6 +366,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 	//assert(mOptimizer != nullptr);
 	assert(inputs.cols() == outputs.cols());
 	assert(inputs.cols() % batch_size == 0);
+	
 	double error = 0.0;
 	printf("Started training\n");
 	Clock clock;
