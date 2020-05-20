@@ -13,6 +13,36 @@ SoftmaxNeuron::~SoftmaxNeuron()
 {
 }
 
+bool SoftmaxNeuron::init()
+{
+#ifdef NN_DEBUG
+	assert(mInput->Data.mShape[0] == mOutput->Data.mShape[0]);
+	assert(mInput->Data.mSize == mOutput->Data.mSize);
+#endif
+
+	uint64_t BatchSize = mInput->Data.mShape[0];
+	uint64_t ChannelSize = mInput->Data.mSize / BatchSize;
+	cudnnTensorFormat_t TensorFormat = CUDNN_TENSOR_NHWC;
+
+	checkCUDNN(cudnnCreateTensorDescriptor(&mInputDesc));
+	checkCUDNN(cudnnSetTensor4dDescriptor(mInputDesc,
+                                      /*format=*/TensorFormat,
+                                      /*dataType=*/CUDNN_DATA_FLOAT,
+                                      /*batch_size=*/BatchSize,
+                                      /*channels=*/ChannelSize,
+                                      /*image_height=*/1,
+                                      /*image_width=*/1));
+
+	checkCUDNN(cudnnCreateTensorDescriptor(&mOutputDesc));
+	checkCUDNN(cudnnSetTensor4dDescriptor(mOutputDesc,
+                                      /*format=*/TensorFormat,
+                                      /*dataType=*/CUDNN_DATA_FLOAT,
+                                      /*batch_size=*/BatchSize,
+                                      /*channels=*/ChannelSize,
+                                      /*image_height=*/1,
+                                      /*image_width=*/1));
+}
+
 void SoftmaxNeuron::forward()
 {
 #ifdef USE_GPU

@@ -20,10 +20,15 @@ public:
 	Blob* mInput;
 	Blob* mOutput;
 
+	// cudnnSoftmaxAlgorithm_t mAlgorithm;
+	cudnnTensorDescriptor_t mInputDesc;
+	cudnnTensorDescriptor_t mOutputDesc;
+
 	SoftmaxNeuron();
 	SoftmaxNeuron(Blob* input, Blob* output);
 	~SoftmaxNeuron();
 
+	bool init();
 	void forward();
 	void forwardCPU();
 	void forwardGPU();
