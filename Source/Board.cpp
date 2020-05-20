@@ -508,3 +508,41 @@ void Board::clear_deltas()
 		mBlobs[i]->Delta.copyToGPU();
 	}
 }
+
+Blob* Board::addFCNeuron(Blob* input, size_t layer_size)
+{
+	assert(input->Data.mShape.size()==2);
+	size_t BatchSize = input->Data.cols();
+	Blob* b = newBlob(make_shape(BatchSize, layer_size));
+
+	addNeuron(new FullyConnectedNeuron(input,b));
+
+	return b;
+}
+
+Blob* Board::addSigmoidNeuron(Blob* input)
+{
+	Blob *b = newBlob(input->Data.mShape);
+	addNeuron(new SigmoidNeuron(input, b));
+	return b;
+}
+
+Blob* Board::addTanhNeuron(Blob* input)
+{
+	Blob *b = newBlob(input->Data.mShape);
+	addNeuron(new TanhNeuron(input, b));
+	return b;
+}
+
+Blob* Board::addLeakyReLUNeuron(Blob* input, float leak_factor)
+{
+	Blob *b = newBlob(input->Data.mShape);
+	addNeuron(new LeakyReLUNeuron(input, b, leak_factor));
+	return b;
+}
+
+Blob* Board::addConvNeuron(Blob* input, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x, int dilation_y)
+{
+	Blob *b;
+	return b;
+}

@@ -22,7 +22,7 @@ public:
 
 	FullyConnectedNeuron();
 	// FullyConnectedNeuron(Blob* input, Blob* output);
-	FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer);
+	FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer=nullptr);
 	~FullyConnectedNeuron();
 
 	bool init();

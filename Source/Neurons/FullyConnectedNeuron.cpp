@@ -8,7 +8,7 @@ FullyConnectedNeuron::FullyConnectedNeuron() : Neuron()
 // {
 // }
 
-FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer=nullptr)
+FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer)
 	: mInput(input), mOutput(output), mInitializer(initializer)
 {
 	// assert(input->Data.mShape.size() == 2);
@@ -46,7 +46,7 @@ FullyConnectedNeuron::~FullyConnectedNeuron()
 
 bool FullyConnectedNeuron::init()
 {
-	assert(mInitializer!=nullptr);
+	// assert(mInitializer!=nullptr);
 	assert(mInput->Data.mShape.size() == 2);
 	assert(mOutput->Data.mShape.size() == 2);
 	Weights = new Blob(make_shape(mInput->Data.rows(), mOutput->Data.rows()), Name + "Weights");
