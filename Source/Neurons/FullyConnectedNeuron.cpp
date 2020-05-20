@@ -8,7 +8,7 @@ FullyConnectedNeuron::FullyConnectedNeuron() : Neuron()
 // {
 // }
 
-FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer)
+FullyConnectedNeuron::FullyConnectedNeuron(Blob* input, Blob* output, Initializer* initializer=nullptr)
 	: mInput(input), mOutput(output), mInitializer(initializer)
 {
 	// assert(input->Data.mShape.size() == 2);
@@ -52,17 +52,36 @@ bool FullyConnectedNeuron::init()
 	Weights = new Blob(make_shape(mInput->Data.rows(), mOutput->Data.rows()), Name + "Weights");
 	Biases = new Blob(make_shape(1,mOutput->Data.rows()), Name + "Bias");
 	// BiasesStacked = new Blob(mOutput->Data.mShape, Name+"BiasStacked");
+
+	//Initialize
 	for (uint64_t i = 0; i < Weights->Data.rows(); i++)
 	{
-		Biases->Data(i) = mInitializer->get_value(i);
+		if(mInitializer==nullptr)
+		{
+			Biases->Data(i) = rand_init(-0.5, 0.5);
+		}
+		else
+		{
+			Biases->Data(i) = mInitializer->get_value(i);
+		}
+		
 		// printf("b %d %f\n", i, Biases->Data(i));
 		for (uint64_t j = 0; j < Weights->Data.cols(); j++)
 		{
-			Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.cols());
+			if(mInitializer==nullptr)
+			{
+				Weights->Data(j, i) = rand_init(-0.5, 0.5);
+			}
+			else
+			{
+				Weights->Data(j, i) = mInitializer->get_value(j + i*Weights->Data.cols());
+			}
 			// BiasesStacked->Data(j, i) = Biases->Data(i);
 			// printf("wt %d %d %f\n", j, i, Weights->Data(j,i));
 		}
 	}
+
+
 	Biases->copyToGPU();
 	// BiasesStacked->copyToGPU();
 	Weights->copyToGPU();

@@ -21,7 +21,7 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}; -O3 -gencode arch=compute_75,code=sm_75)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -O3 -gencode arch=compute_75,code=sm_75)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -70,11 +70,14 @@ file(GLOB SOURCE_FILES
     Source/Initializers/*.cu
     Source/ErrorFunctions/*.cpp
     Source/ErrorFunctions/*.cu
+    Source/Tests/*.cpp
+    Source/Tests/*.cu
 
     Include/Neurons/*.h
     Include/Optimizers/*.h
     Include/Initializers/*.h
     Include/ErrorFunctions/*.h
+    Include/Tests/*.h
 )
 
 add_library(CoreNN STATIC ${SOURCE_FILES})
@@ -106,6 +109,7 @@ target_link_libraries(CoreNN_test libIL.so)
 target_link_libraries(CoreNN_test libILU.so)
 target_link_libraries(CoreNN_test libILUT.so)
 target_link_libraries(CoreNN_test pthread)
+# target_compile_options(CoreNN_test PUBLIC "-rdc=true")
 # target_link_libraries(CoreNN_test libtiff.so)
 # target_link_libraries(CoreNN_test libjpeg.so)
 # target_link_libraries(CoreNN_test libpng.so)

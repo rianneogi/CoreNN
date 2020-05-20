@@ -1,5 +1,5 @@
 #include <x86intrin.h>
-#include "Tests.h"
+#include "Tests/Tests.h"
 
 #include "NNInclude.h"
 

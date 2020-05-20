@@ -64,4 +64,11 @@ public:
 	size_t getBlobID(std::string name);
 
 	void clear_deltas();
+
+	Blob *addFCNeuron(Blob* input, size_t layer_size);
+	Blob *addConvNeuron(Blob* input, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x=1, int dilation_y=1);
+	Blob *addTanhNeuron(Blob* input);
+	Blob *addSigmoidNeuron(Blob* input);
+	Blob *addLeakyReLUNeuron(Blob* input, float leak_factor);
+	Blob *addSoftmaxNeuron(Blob *input);
 };

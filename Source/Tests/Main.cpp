@@ -1,4 +1,4 @@
-#include "Tests.h"
+#include "Tests/Tests.h"
 // #include "CudaTests.h"
 
 // #define M 6

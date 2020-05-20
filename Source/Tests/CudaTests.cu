@@ -1,7 +1,7 @@
 // #include <cuda_runtime.h>
 // #include <device_launch_parameters.h>
 
-#include "CudaTests.h"
+#include "Tests/CudaTests.h"
 
 // #include <opencv4/opencv2/opencv.hpp>
 
