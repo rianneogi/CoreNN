@@ -534,6 +534,13 @@ Blob* Board::addTanhNeuron(Blob* input)
 	return b;
 }
 
+Blob* Board::addSoftmaxNeuron(Blob* input)
+{
+	Blob *b = newBlob(input->Data.mShape);
+	addNeuron(new SoftmaxNeuron(input, b));
+	return b;
+}
+
 Blob* Board::addLeakyReLUNeuron(Blob* input, float leak_factor)
 {
 	Blob *b = newBlob(input->Data.mShape);
