@@ -4,9 +4,9 @@ ConvNeuron::ConvNeuron() : Neuron()
 {
 }
 
-ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x, int dilation_y)
+ConvNeuron::ConvNeuron(Blob* input, Blob* output, int filter_x, int filter_y, int pad_x, int pad_y, int stride_x, int stride_y, int dilation_x, int dilation_y, Initializer* initializer)
 	: mInput(input), mOutput(output), FieldWidth(filter_x), FieldHeight(filter_y), PaddingX(pad_x), PaddingY(pad_y), 
-	  StrideX(stride_x), StrideY(stride_y), DilationX(dilation_x), DilationY(dilation_y)
+	  StrideX(stride_x), StrideY(stride_y), DilationX(dilation_x), DilationY(dilation_y), mInitializer(initializer)
 {
 	// #ifdef NN_DEBUG
 	// assert(mInput->Data.mShape.size() == 4);
@@ -249,7 +249,10 @@ bool ConvNeuron::init()
 	Biases = new Blob(make_shape(1, OutputDepth));
 	for (int i = 0; i < Weights->Data.cols(); i++)
 	{
-		Biases->Data(i) = rand_init(-0.5, 0.5);
+		if(mInitializer==nullptr)
+			Biases->Data(i) = rand_init(-0.5, 0.5);
+		else
+			Biases->Data(i) = mInitializer->get_value(i);
 		// for (int j = 0; j < Weights->Data.rows(); j++)
 		// {
 		// 	Weights->Data(j, i) = rand_init(-0.5, 0.5);
@@ -258,7 +261,10 @@ bool ConvNeuron::init()
 
 	for (int i = 0; i < Weights->Data.mAllocSize;i++)
 	{
-		Weights->Data(i) = rand_init(-0.5, 0.5);
+		if(mInitializer==nullptr)
+			Weights->Data(i) = rand_init(-0.5, 0.5);
+		else
+			Weights->Data(i) = mInitializer->get_value(i);
 		// Weights->Data(i) = 0.0f;
 	}
 	Weights->Data.copyToGPU();
