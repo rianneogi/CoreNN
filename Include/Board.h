@@ -17,6 +17,7 @@
 #include "Neurons/KnightNeuron.h"
 #include "Neurons/RankNeuron.h"
 #include "Neurons/StepNeuron.h"
+#include "Neurons/SoftmaxNeuron.h"
 
 #include "Optimizers/AdamOptimizer.h"
 #include "Optimizers/StandardOptimizer.h"
