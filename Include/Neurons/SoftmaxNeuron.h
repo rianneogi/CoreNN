@@ -20,6 +20,9 @@ public:
 	Blob* mInput;
 	Blob* mOutput;
 
+	uint64_t BatchSize;
+	uint64_t ChannelSize;
+
 	// cudnnSoftmaxAlgorithm_t mAlgorithm;
 	cudnnTensorDescriptor_t mInputDesc;
 	cudnnTensorDescriptor_t mOutputDesc;

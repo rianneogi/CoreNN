@@ -19,9 +19,11 @@ bool SoftmaxNeuron::init()
 	assert(mInput->Data.mShape[0] == mOutput->Data.mShape[0]);
 	assert(mInput->Data.mSize == mOutput->Data.mSize);
 #endif
+	//Tell Cudnn to treat the input and output as BatchSize*ChannelSize*1*1 tensors in NCHW format
+	//The sum will be taken over ChannelSize
 
-	uint64_t BatchSize = mInput->Data.mShape[0];
-	uint64_t ChannelSize = mInput->Data.mSize / BatchSize;
+	BatchSize = mInput->Data.mShape[0];
+	ChannelSize = mInput->Data.mSize / BatchSize;
 	cudnnTensorFormat_t TensorFormat = CUDNN_TENSOR_NHWC;
 
 	checkCUDNN(cudnnCreateTensorDescriptor(&mInputDesc));
@@ -65,14 +67,20 @@ void SoftmaxNeuron::backprop()
 
 void SoftmaxNeuron::forwardCPU()
 {
-	float sum = 0.0f;
-	for (uint64_t i = 0; i < mOutput->Data.mSize; i++)
+#ifdef NN_DEBUG
+	assert(mInput->Data.mShape.size()==2 && mInput->Data.mShape.size()==2 && "Softmax forward CPU only supports 2D tensors");
+#endif
+	for (uint64_t i = 0; i < BatchSize;i++)
 	{
-		sum += exp(mInput->Data(i));
-	}
-	for (uint64_t i = 0; i < mOutput->Data.mSize; i++)
-	{
-		mOutput->Data(i) = exp(mInput->Data(i))/sum;
+		float sum = 0.0f;
+		for (uint64_t j = 0; j < ChannelSize; j++)
+		{
+			sum += exp(mInput->Data(i,j));
+		}
+		for (uint64_t j = 0; j < ChannelSize; j++)
+		{
+			mOutput->Data(i,j) = exp(mInput->Data(i,j))/sum;
+		}
 	}
 }
 
