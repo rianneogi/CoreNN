@@ -26,6 +26,8 @@
 #include "ErrorFunctions/L1Error.h"
 #include "ErrorFunctions/MeanSquaredError.h"
 #include "ErrorFunctions/UnitError.h"
+#include "ErrorFunctions/CrossEntropyError.h"
+#include "ErrorFunctions/CategoricalCrossEntropyError.h"
 
 #include "Initializers/RangeInitializer.h"
 

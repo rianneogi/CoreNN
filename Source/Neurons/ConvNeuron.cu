@@ -32,6 +32,7 @@ void ConvNeuron::backpropGPU()
     assert(Weights->Data.mDataGPU != NULL);
     assert(mOutput->Data.mDataGPU != NULL);
 #endif
+
     const float alpha = 1.0f, beta = 0.0f;
     checkCUDNN(cudnnConvolutionBackwardData(gCudnnHandle, &alpha, FilterDesc, Weights->Data.mDataGPU, OutputDesc, mOutput->Delta.mDataGPU, ConvDesc, BackwardDataAlg,
                                             dBackwardDataWorkspace, BackwardDataWorkspaceBytes, &beta, InputDesc, mInput->Delta.mDataGPU));
