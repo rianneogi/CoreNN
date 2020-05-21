@@ -20,8 +20,13 @@
 #include <cublas_v2.h>
 #include <cblas.h>
 #include <curand.h>
-#include <thrust/reduce.h>
 #include <cudnn.h>
+
+#include <thrust/device_vector.h>
+#include <thrust/copy.h>
+#include <thrust/transform.h>
+#include <thrust/reduce.h>
+
 // #include <boost/gil.hpp>
 // #include <boost/gil/io/io.hpp>
 // #include <boost/gil/extension/io/tiff.hpp>
