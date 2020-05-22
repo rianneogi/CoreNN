@@ -1,18 +1,6 @@
 #include "ErrorFunctions/CategoricalCrossEntropyError.h"
 
-CategoricalCrossEntropyError::CategoricalCrossEntropyError() : ErrorFunction()
-{
-}
-
-CategoricalCrossEntropyError::CategoricalCrossEntropyError(Blob* output) : ErrorFunction(output, Tensor(output->Data.mShape))
-{
-}
-
-CategoricalCrossEntropyError::CategoricalCrossEntropyError(Blob* output, Tensor target) : ErrorFunction(output, target)
-{
-	BatchSize = output->Data.mShape[0];
-	NumCategories = output->Data.mSize / BatchSize;
-}
+float epsilon = 0.00005;
 
 CategoricalCrossEntropyError::~CategoricalCrossEntropyError()
 {
@@ -21,7 +9,11 @@ CategoricalCrossEntropyError::~CategoricalCrossEntropyError()
 Float CategoricalCrossEntropyError::calculateError()
 {
 #ifdef USE_GPU
-	return calculateErrorGPU();
+	float f = calculateErrorGPU();
+	// float f2 = calculateErrorCPU();
+	// printf("err %f %f\n", f, f2);
+	// assert(f >= f2 - 0.5 && f <= f2 + 0.5);
+	return f;
 #elif
 	return calculateErrorCPU();
 #endif
@@ -35,8 +27,9 @@ Float CategoricalCrossEntropyError::calculateErrorCPU()
 	Float error = 0;
 	for (int i = 0; i < mOutput->Data.mSize; i++)
 	{
-		error += -mTarget(i) * log(mOutput->Data(i));
-		mOutput->Delta(i) += -mTarget(i)/mOutput->Data(i);
+		error += -mTarget(i) * log(mOutput->Data(i)+epsilon);
+		// error += -mTarget(i) * mOutput->Data(i);
+		mOutput->Delta(i) += -mTarget(i) / mOutput->Data(i);
 	}
 
 	return error;

@@ -391,6 +391,150 @@ void test_fc()
 	// _getch();
 }
 
+void test_cce()
+{
+	//Categorical Cross Entropy and Softmax Test
+
+	//MNIST input size: 28x28 = 784
+	//CIFAR input size: 3072
+
+	Board b;
+	int batch_size = 100;
+	double learning_rate = 0.005;
+	int epochs = 5;
+
+	Initializer* initializer = new RangeInitializer();
+
+	Blob* inputBlob = b.newBlob(make_shape(batch_size, 784), "Input");
+	Blob* layer1FCBlob = b.newBlob(make_shape(batch_size, 100), "layer1FC");
+	Blob* layer1SigBlob = b.newBlob(make_shape(batch_size, 100), "layer1Sig");
+	Blob* layer2FCBlob = b.newBlob(make_shape(batch_size, 50), "layer2FC");
+	Blob* layer2SigBlob = b.newBlob(make_shape(batch_size, 50) ,"layer2Sig");
+	/*Blob* layer3FCBlob = b.newBlob(make_shape(batch_size, 12));
+	Blob* layer3SigBlob = b.newBlob(make_shape(batch_size, 12));*/
+	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10), "OutputFC");
+	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10), "OutputSig");
+	
+	b.setOptimizer(new AdamOptimizer(learning_rate));
+
+	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob, initializer), "FC1");
+
+	b.addNeuron(new SigmoidNeuron(layer1FCBlob, layer1SigBlob), "Act1");
+	b.addNeuron(new FullyConnectedNeuron(layer1SigBlob, layer2FCBlob, initializer), "FC2");
+	b.addNeuron(new SigmoidNeuron(layer2FCBlob, layer2SigBlob), "Act2");
+
+	/*b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, layer3FCBlob, learning_rate));
+	b.addNeuron(new LeakyReLUNeuron(layer3FCBlob, layer3SigBlob, 0.05));*/
+	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob, initializer), "FC3");
+	b.addNeuron(new SoftmaxNeuron(outputFCBlob, outputSigBlob), "Act3");
+
+	b.addErrorFunction(new CategoricalCrossEntropyError(outputSigBlob));
+	
+	b.addPlaceholder(&inputBlob->Data);
+	b.addPlaceholder(&b.mErrorFuncs[0]->mTarget);
+	
+	b.setUp();
+	
+	Tensor inputs_train = openidx_input(TEST_DATA_PATH + "train-images.idx3-ubyte");
+	Tensor outputs_train = openidx_output(TEST_DATA_PATH + "train-labels.idx1-ubyte", 10);
+	Tensor inputs_test = openidx_input(TEST_DATA_PATH + "t10k-images.idx3-ubyte");
+	Tensor outputs_test = openidx_output(TEST_DATA_PATH + "t10k-labels.idx1-ubyte", 10);
+	// inputs_train.copyToGPU();
+	// outputs_train.copyToGPU();
+	// inputs_test.copyToGPU();
+	// outputs_test.copyToGPU();
+
+	/*TrainingData b1 = load_cifar("Data/cifar-10-batches-bin/data_batch_1.bin");
+	TrainingData b2 = load_cifar("Data/cifar-10-batches-bin/data_batch_2.bin");
+	TrainingData b3 = load_cifar("Data/cifar-10-batches-bin/data_batch_3.bin");
+
+	TrainingData b6 = load_cifar("Data/cifar-10-batches-bin/test_batch.bin");
+
+	Matrix inputs_test = b6.inputs;
+	Matrix outputs_test = b6.outputs;*/
+
+	b.train(inputs_train, outputs_train, epochs, batch_size);
+	/*for (int i = 0; i < 10; i++)
+	{
+	b.train(b1.inputs, b1.outputs, 1, 100);
+	b.train(b2.inputs, b2.outputs, 1, 100);
+	b.train(b3.inputs, b3.outputs, 1, 100);
+	}*/
+
+
+	int acc = 0;
+	for (size_t i = 0; i < inputs_test.rows()/batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
+		for (size_t j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			
+			// printf("output1\n");
+			// o.cut(j,1).print();
+			// printf("output2\n");
+			// outputs_test.cut(i*batch_size + j, 1).print();
+			// printf("%d %d\n", result, target);
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+		/*else
+		{
+		printinput(inputs_train.col(i));
+		printoutput(nn.forward(inputs_train.col(i)));
+		printf("%d %d\n", getoutput(nn.forward(inputs_train.col(i))), getoutput(outputs_train.col(i)));
+		}*/
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	b.train(inputs_train, outputs_train, 1, batch_size);
+	acc = 0;
+	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
+		for (int j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	b.train(inputs_train, outputs_train, 1, batch_size);
+	acc = 0;
+	for (size_t i = 0; i < inputs_test.cols() / batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		for (int j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.cols());
+
+	inputs_train.freemem();
+	inputs_test.freemem();
+	outputs_train.freemem();
+	outputs_test.freemem();
+
+	//nn.save("net_handwriting.txt");
+	// _getch();
+}
+
 void test_conv()
 {
 	Board b;

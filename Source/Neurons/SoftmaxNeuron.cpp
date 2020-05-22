@@ -43,6 +43,8 @@ bool SoftmaxNeuron::init()
                                       /*channels=*/ChannelSize,
                                       /*image_height=*/1,
                                       /*image_width=*/1));
+
+	return true;
 }
 
 void SoftmaxNeuron::forward()

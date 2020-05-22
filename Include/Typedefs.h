@@ -26,6 +26,7 @@
 #include <thrust/copy.h>
 #include <thrust/transform.h>
 #include <thrust/reduce.h>
+#include <thrust/transform_reduce.h>
 
 // #include <boost/gil.hpp>
 // #include <boost/gil/io/io.hpp>

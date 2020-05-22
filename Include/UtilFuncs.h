@@ -47,6 +47,8 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=t
       std::exit(EXIT_FAILURE);                               \
     }                                                        \
   }
+  
+std::string cublasGetErrorString(cublasStatus_t error);
 
 void initCuda();
 void cleanupCuda();

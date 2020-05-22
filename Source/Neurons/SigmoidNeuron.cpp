@@ -13,11 +13,16 @@ SigmoidNeuron::~SigmoidNeuron()
 {
 }
 
+bool SigmoidNeuron::init()
+{
+	return true;
+}
+
 void SigmoidNeuron::forward()
 {
 #ifdef USE_GPU
 	forwardGPU();
-	// forwardCPU();
+	forwardCPU();
 #else
 	forwardCPU();
 #endif

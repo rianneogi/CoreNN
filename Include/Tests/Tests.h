@@ -9,6 +9,7 @@
 void test_fc();
 void test_conv();
 void test_autoencoder();
+void test_cce();
 
 //CPU
 void test_gemm();

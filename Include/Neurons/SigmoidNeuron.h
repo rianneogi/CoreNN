@@ -22,6 +22,7 @@ public:
 	SigmoidNeuron(Blob* input, Blob* output);
 	~SigmoidNeuron();
 
+	bool init();
 	void forward();
 	void forwardCPU();
 	void forwardGPU();

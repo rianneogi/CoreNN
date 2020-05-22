@@ -7,6 +7,7 @@ class CategoricalCrossEntropyError : public ErrorFunction
 public:
 	uint64_t BatchSize;
 	uint64_t NumCategories;
+	thrust::device_vector<float> intermediateVector; //vector to store an intermediate computation
 
 	CategoricalCrossEntropyError();
 	CategoricalCrossEntropyError(Blob* output);

@@ -28,15 +28,20 @@ void SoftmaxNeuron::forwardGPU()
 
 	float alpha = 1.0f;
 	float beta = 0.0f;
-	checkCUDNN(cudnnSoftmaxForward(gCudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE, &alpha, mInputDesc, mInput->Data.mDataGPU, &beta, mOutputDesc, mOutput->Data.mDataGPU));
+	checkCUDNN(cudnnSoftmaxForward(gCudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE, &alpha, mInputDesc, mInput->Data.mDataGPU, &beta, mOutputDesc, mOutput->Data.mDataGPU));
 }
 
 void SoftmaxNeuron::backpropGPU()
 {
-	int N = mInput->Data.mAllocSize;
-	int NUM_THREADS = 1 << 10;
-	int NUM_BLOCKS = (N + NUM_THREADS - 1) / NUM_THREADS;
-	softmax_backprop<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
-												mInput->Data.mDataGPU, mInput->Delta.mDataGPU,
-												mOutput->Data.mDataGPU, mOutput->Delta.mDataGPU);
+	// int N = mInput->Data.mAllocSize;
+	// int NUM_THREADS = 1 << 10;
+	// int NUM_BLOCKS = (N + NUM_THREADS - 1) / NUM_THREADS;
+	// softmax_backprop<<<NUM_BLOCKS,NUM_THREADS>>>(mInput->Data.mAllocSize,
+	// 											mInput->Data.mDataGPU, mInput->Delta.mDataGPU,
+	// 											mOutput->Data.mDataGPU, mOutput->Delta.mDataGPU);
+
+	float alpha = 1.0f;
+	float beta = 1.0f;
+	cudnnSoftmaxBackward(gCudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE, &alpha, mOutputDesc, mOutput->Data.mDataGPU, mOutputDesc, mOutput->Delta.mDataGPU, &beta,
+						 mInputDesc, mInput->Delta.mDataGPU);
 }

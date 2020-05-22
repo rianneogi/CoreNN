@@ -194,11 +194,12 @@ int main()
 
 	// test_cugemm();
 	// cublas_vector_add();
-	// test_fc();
+	test_fc();
 	// test_cudnn_conv();
 	// test_cudnn_forward();
 	// test_cublas_matmul();
-	test_conv();
+	// test_conv();
+	// test_cce();
 	// test_autoencoder();
 
 	// test_gemm_gpu();

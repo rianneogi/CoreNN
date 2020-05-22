@@ -129,7 +129,7 @@ inline void gemm_gpu(Tensor* m1, Tensor* m2, Tensor* res, cublasOperation_t tran
 				   res->mDataGPU, res->mLD);
 	if(err!=CUBLAS_STATUS_SUCCESS)
 	{
-		printf("ERROR during sgemm %d\n", err);
+		printf("ERROR during sgemm %s\n", cublasGetErrorString(err).c_str());
 		assert(false);
 		// 13 = CUBLAS_STATUS_EXECUTION_FAILED
 		// 14 = CUBLAS_STATUS_INTERNAL_ERROR

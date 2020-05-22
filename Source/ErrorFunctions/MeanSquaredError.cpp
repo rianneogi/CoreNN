@@ -20,7 +20,7 @@ Float MeanSquaredError::calculateError()
 {
 #ifdef USE_GPU
 	Float error = calculateErrorGPU();
-	Float cpuerror = calculateErrorCPU();
+	// Float cpuerror = calculateErrorCPU();
 	// printf("error %f %f\n", error, cpuerror);
 	// assert(error <= cpuerror+10 && error >=cpuerror-10);
 #else
