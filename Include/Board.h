@@ -80,7 +80,7 @@ public:
 	Float backprop(const Tensor& input1, const Tensor& input2, const Tensor& input3, const Tensor& input4);
 
 	//Tensor predict(const Tensor& input);
-
+	double train(const std::vector<Tensor>& inputs, unsigned int epochs, unsigned int batch_size);
 	double train(const Tensor& inputs, const Tensor& outputs, unsigned int epochs, unsigned int batch_size);
 
 	void save_variables(std::string filename);

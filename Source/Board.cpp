@@ -360,27 +360,39 @@ Float Board::backprop(const Tensor& input1, const Tensor& input2, const Tensor& 
 //	return mNeurons[mNeurons.size()-1]->mOutput->Data;
 //}
 
-double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int epochs, unsigned int batch_size)
+double Board::train(const std::vector<Tensor>& inputs, unsigned int epochs, unsigned int batch_size)
 {
 	assert(mErrorFuncs.size() > 0);
 	//assert(mOptimizer != nullptr);
-	assert(inputs.cols() == outputs.cols());
-	assert(inputs.cols() % batch_size == 0);
-	
+	// assert(inputs.cols() == outputs.cols());
+	assert(inputs[0].cols() % batch_size == 0);
+	for (int i = 1; i < inputs.size();i++)
+	{
+		assert(inputs[i].cols() == inputs[i-1].cols());
+	}
+
 	double error = 0.0;
 	printf("Started training\n");
 	Clock clock;
 	clock.Start();
-	Tensor tmp_input;
-	Tensor tmp_output;
+
+	std::vector<Tensor> tmps(inputs.size());
+	// Tensor tmp_input;
+	// Tensor tmp_output;
 
 	for (int i = 0; i < epochs; i++)
 	{
 		error = 0.0;
-		for (uint64_t j = 0; j < inputs.cols() / batch_size; j++)
+		for (uint64_t j = 0; j < inputs[0].cols() / batch_size; j++)
 		{
-			tmp_input = inputs.cut(batch_size*j, batch_size);
-			tmp_output = outputs.cut(batch_size*j, batch_size);
+			std::vector<Tensor> placeholders;
+			for (int k = 0; k < inputs.size();k++)
+			{
+				tmps[k] = inputs[k].cut(batch_size * j, batch_size);
+				placeholders.push_back(tmps[k]);
+			}
+			// tmp_input = inputs.cut(batch_size * j, batch_size);
+			// tmp_output = outputs.cut(batch_size*j, batch_size);
 			
 			// tmp_output.print();
 			
@@ -391,9 +403,9 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 			// int x;
 			// std::cin >> x;
 
-			std::vector<Tensor> placeholders;
-			placeholders.push_back(tmp_input);
-			placeholders.push_back(tmp_output);
+			
+			// placeholders.push_back(tmp_input);
+			// placeholders.push_back(tmp_output);
 
 			// tmp_input.print();
 			// printf("data %f\n", tmp_input(tmp_input.mSize/2));
@@ -416,7 +428,7 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 		}
 		clock.Stop();
 		printf("Error %d: %f, epochs per sec: %f\n", i+1, error, ((i + 1)*1.0) / clock.ElapsedSeconds());
-		printf("Batches per sec: %f\n", (i+1.0)*(inputs.cols()*1.0 / batch_size) / clock.ElapsedSeconds());
+		printf("Batches per sec: %f\n", (i+1.0)*(inputs[0].cols()*1.0 / batch_size) / clock.ElapsedSeconds());
 	}
 	printf("Done training\n");
 
@@ -424,6 +436,76 @@ double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int ep
 	// tmp_output.freemem();
 
 	return error;
+}
+
+double Board::train(const Tensor& inputs, const Tensor& outputs, unsigned int epochs, unsigned int batch_size)
+{
+	std::vector<Tensor> v;
+	v.push_back(inputs);
+	v.push_back(outputs);
+	return train(v, epochs, batch_size);
+	// assert(mErrorFuncs.size() > 0);
+	// //assert(mOptimizer != nullptr);
+	// assert(inputs.cols() == outputs.cols());
+	// assert(inputs.cols() % batch_size == 0);
+
+	// double error = 0.0;
+	// printf("Started training\n");
+	// Clock clock;
+	// clock.Start();
+	// Tensor tmp_input;
+	// Tensor tmp_output;
+
+	// for (int i = 0; i < epochs; i++)
+	// {
+	// 	error = 0.0;
+	// 	for (uint64_t j = 0; j < inputs.cols() / batch_size; j++)
+	// 	{
+	// 		tmp_input = inputs.cut(batch_size*j, batch_size);
+	// 		tmp_output = outputs.cut(batch_size*j, batch_size);
+			
+	// 		// tmp_output.print();
+			
+	// 		// printf("input:\n");
+	// 		// tmp_input.print();
+	// 		// printf("\noutput\n");
+	// 		// tmp_output.print();
+	// 		// int x;
+	// 		// std::cin >> x;
+
+	// 		std::vector<Tensor> placeholders;
+	// 		placeholders.push_back(tmp_input);
+	// 		placeholders.push_back(tmp_output);
+
+	// 		// tmp_input.print();
+	// 		// printf("data %f\n", tmp_input(tmp_input.mSize/2));
+	// 		// for(uint64_t i = 0;i<tmp_input.mSize;i++)
+	// 		// {
+	// 		// 	if(tmp_input(i)>2)
+	// 		// 	{
+	// 		// 		printf("%f\n", i);
+	// 		// 	}
+	// 		// }
+
+	// 		error += backprop(placeholders);
+
+	// 		if (mUseOptimizer)
+	// 			mOptimizer->optimize();
+
+	// 		// printf("BATCH: %d/%d\n", j+1, inputs.cols() / batch_size);
+
+	// 		// placeholders.clear();
+	// 	}
+	// 	clock.Stop();
+	// 	printf("Error %d: %f, epochs per sec: %f\n", i+1, error, ((i + 1)*1.0) / clock.ElapsedSeconds());
+	// 	printf("Batches per sec: %f\n", (i+1.0)*(inputs.cols()*1.0 / batch_size) / clock.ElapsedSeconds());
+	// }
+	// printf("Done training\n");
+
+	// // tmp_input.freemem();
+	// // tmp_output.freemem();
+
+	// return error;
 }
 
 void Board::save_variables(std::string filename)
