@@ -113,23 +113,13 @@ void Board::reset()
 	}
 }
 
-//Tensor Board::forward(const Tensor& input)
-//{
-//	mNeurons[0]->mInput->Data.mData = input.mData;
-//	for (size_t i = 0; i < mNeurons.size(); i++)
-//	{
-//		mNeurons[i]->forward();
-//	}
-//	return mNeurons[mNeurons.size()-1]->mOutput->Data;
-//}
-
 Tensor Board::forward(const std::vector<Tensor>& placeholders)
 {
 	//Set placeholders
 	assert(placeholders.size() <= mPlaceholders.size());
 	for (size_t i = 0; i < placeholders.size(); i++)
 	{
-		assert(mPlaceholders[i]->mSize==placeholders[i].mSize);
+		assert(mPlaceholders[i]->mSize == placeholders[i].mSize);
 		// mPlaceholders[i]->mData = placeholders[i].mData;
 		// mPlaceholders[i]->mStart = placeholders[i].mStart;
 		// mPlaceholders[i]->mLD = placeholders[i].mLD;
@@ -265,6 +255,7 @@ Float Board::backprop(const std::vector<Tensor>& placeholders)
 	assert(placeholders.size() <= mPlaceholders.size());
 	for (size_t i = 0; i < placeholders.size(); i++)
 	{
+		// printf("test %d %d %d\n", i, mPlaceholders[i]->mSize, placeholders[i].mSize);
 		assert(mPlaceholders[i]->mSize==placeholders[i].mSize);
 		// printf("setting placeholder %d\n", i);
 		// mPlaceholders[i]->mData = placeholders[i].mData;
@@ -365,8 +356,10 @@ double Board::train(const std::vector<Tensor>& inputs, unsigned int epochs, unsi
 	assert(mErrorFuncs.size() > 0);
 	//assert(mOptimizer != nullptr);
 	// assert(inputs.cols() == outputs.cols());
-	assert(inputs[0].cols() % batch_size == 0);
-	for (int i = 1; i < inputs.size();i++)
+	// assert(inputs[0].cols() % batch_size == 0);
+	if (inputs[0].cols() % batch_size != 0)
+		printf("WARNING: number of training samples is not a multiple of batch size\n");
+	for (int i = 1; i < inputs.size(); i++)
 	{
 		assert(inputs[i].cols() == inputs[i-1].cols());
 	}
@@ -551,14 +544,32 @@ void Board::load_variables(std::string filename)
 	file.close();
 }
 
+void Board::copyVariablesToCPU()
+{
+	for (size_t i = 0; i < mOptimizer->Variables.size();i++)
+	{
+		mOptimizer->Variables[i]->Data.copyToCPU();
+	}
+}
+
+void Board::copyVariablesToGPU()
+{
+	for (size_t i = 0; i < mOptimizer->Variables.size();i++)
+	{
+		mOptimizer->Variables[i]->Data.copyToGPU();
+	}
+}
+
 void Board::copy_variables(const Board* b)
 {
 	assert(mOptimizer->Variables.size()==b->mOptimizer->Variables.size());
 	for (size_t i = 0; i < mOptimizer->Variables.size(); i++)
 	{
-		assert(mOptimizer->Variables[i]->Data.mSize==b->mOptimizer->Variables[i]->Data.mSize);
-		std::memcpy(mOptimizer->Variables[i]->Data.mData, b->mOptimizer->Variables[i]->Data.mData,
-			sizeof(Float)*mOptimizer->Variables[i]->Data.mSize);
+		assert(mOptimizer->Variables[i]->Data.mSize == b->mOptimizer->Variables[i]->Data.mSize);
+		std::memcpy(mOptimizer->Variables[i]->Data.mData, b->mOptimizer->Variables[i]->Data.mData, sizeof(Float)*mOptimizer->Variables[i]->Data.mAllocSize);
+		mOptimizer->Variables[i]->Data.copyToGPU();
+		// int r = rand() % mOptimizer->Variables[i]->Data.mSize;
+		// assert(mOptimizer->Variables[i]->Data(r) == b->mOptimizer->Variables[i]->Data(r));
 	}
 }
 

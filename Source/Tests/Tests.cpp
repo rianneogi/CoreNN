@@ -491,40 +491,40 @@ void test_cce()
 	}
 	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
 
-	b.train(inputs_train, outputs_train, 1, batch_size);
-	acc = 0;
-	for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
-	{
-		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
-		o.copyToCPU();
-		for (int j = 0; j < batch_size; j++)
-		{
-			unsigned int result = getoutput(o.cut(j, 1));
-			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
-			if (result == target)
-			{
-				acc++;
-			}
-		}
-	}
-	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+	// b.train(inputs_train, outputs_train, 1, batch_size);
+	// acc = 0;
+	// for (size_t i = 0; i < inputs_test.rows() / batch_size; i++)
+	// {
+	// 	Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+	// 	o.copyToCPU();
+	// 	for (int j = 0; j < batch_size; j++)
+	// 	{
+	// 		unsigned int result = getoutput(o.cut(j, 1));
+	// 		unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+	// 		if (result == target)
+	// 		{
+	// 			acc++;
+	// 		}
+	// 	}
+	// }
+	// printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
 
-	b.train(inputs_train, outputs_train, 1, batch_size);
-	acc = 0;
-	for (size_t i = 0; i < inputs_test.cols() / batch_size; i++)
-	{
-		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
-		for (int j = 0; j < batch_size; j++)
-		{
-			unsigned int result = getoutput(o.cut(j, 1));
-			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
-			if (result == target)
-			{
-				acc++;
-			}
-		}
-	}
-	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.cols());
+	// b.train(inputs_train, outputs_train, 1, batch_size);
+	// acc = 0;
+	// for (size_t i = 0; i < inputs_test.cols() / batch_size; i++)
+	// {
+	// 	Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+	// 	for (int j = 0; j < batch_size; j++)
+	// 	{
+	// 		unsigned int result = getoutput(o.cut(j, 1));
+	// 		unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+	// 		if (result == target)
+	// 		{
+	// 			acc++;
+	// 		}
+	// 	}
+	// }
+	// printf("Accuracy: %f\n", (acc*1.0) / inputs_test.cols());
 
 	inputs_train.freemem();
 	inputs_test.freemem();
@@ -1244,6 +1244,123 @@ void test_diag()
 	printf("\n %f %f %f \n", 2*input.sum(), l1convBlob->Data.sum(), 2 * input.sum() - l1convBlob->Data.sum());
 
 	// _getch();
+}
+
+void test_saveload()
+{
+	//Tests save load and copy functions of Board
+
+	Board b;
+	Board b2;
+	int batch_size = 100;
+	double learning_rate = 0.005;
+	int epochs = 5;
+
+	Initializer* initializer = new RangeInitializer();
+
+	Blob* inputBlob = b.newBlob(make_shape(batch_size, 784), "Input");
+	Blob* layer1FCBlob = b.newBlob(make_shape(batch_size, 100), "layer1FC");
+	Blob* layer1SigBlob = b.newBlob(make_shape(batch_size, 100), "layer1Sig");
+	Blob* layer2FCBlob = b.newBlob(make_shape(batch_size, 50), "layer2FC");
+	Blob* layer2SigBlob = b.newBlob(make_shape(batch_size, 50) ,"layer2Sig");
+	Blob* outputFCBlob = b.newBlob(make_shape(batch_size, 10), "OutputFC");
+	Blob* outputSigBlob = b.newBlob(make_shape(batch_size, 10), "OutputSig");
+
+	Blob* b2inputBlob = b2.newBlob(make_shape(batch_size, 784), "Input");
+	Blob* b2layer1FCBlob = b2.newBlob(make_shape(batch_size, 100), "layer1FC");
+	Blob* b2layer1SigBlob = b2.newBlob(make_shape(batch_size, 100), "layer1Sig");
+	Blob* b2layer2FCBlob = b2.newBlob(make_shape(batch_size, 50), "layer2FC");
+	Blob* b2layer2SigBlob = b2.newBlob(make_shape(batch_size, 50) ,"layer2Sig");
+	Blob* b2outputFCBlob = b2.newBlob(make_shape(batch_size, 10), "OutputFC");
+	Blob* b2outputSigBlob = b2.newBlob(make_shape(batch_size, 10), "OutputSig");
+	
+	b.setOptimizer(new AdamOptimizer(learning_rate));
+
+	b.addNeuron(new FullyConnectedNeuron(inputBlob, layer1FCBlob), "FC1");
+	b.addNeuron(new SigmoidNeuron(layer1FCBlob, layer1SigBlob), "Act1");
+	b.addNeuron(new FullyConnectedNeuron(layer1SigBlob, layer2FCBlob), "FC2");
+	b.addNeuron(new SigmoidNeuron(layer2FCBlob, layer2SigBlob), "Act2");
+	b.addNeuron(new FullyConnectedNeuron(layer2SigBlob, outputFCBlob), "FC3");
+	b.addNeuron(new SoftmaxNeuron(outputFCBlob, outputSigBlob), "Act3");
+
+	b.addErrorFunction(new CategoricalCrossEntropyError(outputSigBlob));
+	
+	b.addPlaceholder(&inputBlob->Data);
+	b.addPlaceholder(&b.mErrorFuncs[0]->mTarget);
+	
+	b.setUp();
+
+	b2.setOptimizer(new AdamOptimizer(learning_rate));
+
+	b2.addNeuron(new FullyConnectedNeuron(b2inputBlob, b2layer1FCBlob), "FC1");
+	b2.addNeuron(new SigmoidNeuron(b2layer1FCBlob, b2layer1SigBlob), "Act1");
+	b2.addNeuron(new FullyConnectedNeuron(b2layer1SigBlob, b2layer2FCBlob), "FC2");
+	b2.addNeuron(new SigmoidNeuron(b2layer2FCBlob, b2layer2SigBlob), "Act2");
+	b2.addNeuron(new FullyConnectedNeuron(b2layer2SigBlob, b2outputFCBlob), "FC3");
+	b2.addNeuron(new SoftmaxNeuron(b2outputFCBlob, b2outputSigBlob), "Act3");
+
+	b2.addErrorFunction(new CategoricalCrossEntropyError(b2outputSigBlob));
+	
+	b2.addPlaceholder(&b2inputBlob->Data);
+	b2.addPlaceholder(&b2.mErrorFuncs[0]->mTarget);
+	
+	b2.setUp();
+	
+	Tensor inputs_train = openidx_input(TEST_DATA_PATH + "train-images.idx3-ubyte");
+	Tensor outputs_train = openidx_output(TEST_DATA_PATH + "train-labels.idx1-ubyte", 10);
+	Tensor inputs_test = openidx_input(TEST_DATA_PATH + "t10k-images.idx3-ubyte");
+	Tensor outputs_test = openidx_output(TEST_DATA_PATH + "t10k-labels.idx1-ubyte", 10);
+
+	b.train(inputs_train, outputs_train, epochs, batch_size);
+
+
+	int acc = 0;
+	for (size_t i = 0; i < inputs_test.rows()/batch_size; i++)
+	{
+		Tensor o = b.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
+		for (size_t j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	b.copyVariablesToCPU();
+	b.save_variables("test.bin");
+	b2.load_variables("test.bin");
+	// b2.train(inputs_train, outputs_train, epochs, batch_size);
+	// b2.copy_variables(&b);
+	b2.copyVariablesToGPU();
+
+	acc = 0;
+	for (size_t i = 0; i < inputs_test.rows()/batch_size; i++)
+	{
+		Tensor o = b2.forward(inputs_test.cut(i*batch_size, batch_size));
+		o.copyToCPU();
+		for (size_t j = 0; j < batch_size; j++)
+		{
+			unsigned int result = getoutput(o.cut(j, 1));
+			unsigned int target = getoutput(outputs_test.cut(i*batch_size + j, 1));
+			
+			if (result == target)
+			{
+				acc++;
+			}
+		}
+	}
+	printf("Accuracy: %f\n", (acc*1.0) / inputs_test.rows());
+
+	inputs_train.freemem();
+	inputs_test.freemem();
+	outputs_train.freemem();
+	outputs_test.freemem();
 }
 
 void test_mkl()

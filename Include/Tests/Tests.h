@@ -10,6 +10,7 @@ void test_fc();
 void test_conv();
 void test_autoencoder();
 void test_cce();
+void test_saveload();
 
 //CPU
 void test_gemm();

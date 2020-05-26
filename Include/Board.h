@@ -83,6 +83,9 @@ public:
 	double train(const std::vector<Tensor>& inputs, unsigned int epochs, unsigned int batch_size);
 	double train(const Tensor& inputs, const Tensor& outputs, unsigned int epochs, unsigned int batch_size);
 
+	void copyVariablesToCPU();
+	void copyVariablesToGPU();
+
 	void save_variables(std::string filename);
 	void load_variables(std::string filename);
 	void copy_variables(const Board* b);

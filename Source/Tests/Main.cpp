@@ -194,7 +194,8 @@ int main()
 
 	// test_cugemm();
 	// cublas_vector_add();
-	test_fc();
+	// test_fc();
+	test_saveload();
 	// test_cudnn_conv();
 	// test_cudnn_forward();
 	// test_cublas_matmul();
